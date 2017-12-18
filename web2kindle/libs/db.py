@@ -4,7 +4,6 @@
 # Author: Vincent<vincent8280@outlook.com>
 #         http://wax8280.github.io
 # Created on 17-12-13 下午9:56
-import random
 import sqlite3
 import os
 from functools import wraps
@@ -38,6 +37,7 @@ INSERT_ARTICLE_SQL = "INSERT INTO ARTICLE VALUES (?,?,?,?,?,?,?,?);"
 SELECT_ARTICLE_SQL = "SELECT * FROM ARTICLE WHERE VERSION = ?"
 SELECT_LAST_VERION_FROM_ARTICLE_SQL = "SELECT MAX(VERSION) FROM ARTICLE;"
 SELECT_METADATA_SQL = "SELECT DATA FROM META WHERE META = ?"
+SELECT_ALL_ARTICLE_ID_SQL = "SELECT ARTICLE_ID FROM ARTICLE"
 
 
 def insert_meta_data_static(cursor, conn, meta_data: list, update=True):
@@ -166,6 +166,9 @@ class ArticleDB:
     def reset_version(self):
         version = int(self.cursor.execute(SELECT_LAST_VERION_FROM_ARTICLE_SQL).fetchone()[0])
         self.insert_meta_data(['VERSION', version - 1])
+
+    def select_all_article_id(self):
+        return self.cursor.execute(SELECT_ALL_ARTICLE_ID_SQL).fetchall()
 
 
 if __name__ == '__main__':
