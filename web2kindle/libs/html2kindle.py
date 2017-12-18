@@ -78,6 +78,7 @@ class HTML2Kindle:
             # 标记，以便删除
             self.to_remove.add(table_path)
             self.to_remove.add(opf_path)
+            self.to_remove.add(ncx_path)
 
             for item in items:
                 kw = {'author_name': item[5], 'voteup_count': item[4], 'created_time': item[3]}
