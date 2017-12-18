@@ -146,45 +146,18 @@ def parser_content(task):
         raise RetryDownload
 
     new_tasks = []
-    download_img_list = []
     items = []
-    soup = BeautifulSoup(response.text, 'lxml')
-
-    content_select = soup.select('.document')
-    # 移除每页后面无用的信息
-    if content_select:
-        for to_del in soup.select('.copyright'):
-            to_del.decompose()
-
-    content = str(content_select)
-    # bs4会自动加html和body 标签
-    content = re.sub('<html><body>(.*?)</body></html>', lambda x: x.group(1), content, flags=re.S)
-    download_img_list.extend(re.findall('src="(http.*?)"', content))
-    # 更换为本地相对路径
-    content = re.sub('src="(.*?)"', convert_link, content)
-
-    # 去掉"[]"
-    content = content[1:-1]
+    content = response.text
+    # 去除空格
+    content = content.replace('</p><p>', '').replace('<br/>', '')
+    soup = BeautifulSoup(content, 'lxml')
 
     title = task['save']['title']
     article_url = task['url']
     created_time = soup.select('.content-th-info span')[0].string[3:]
     author = soup.select('.content-th-info a')[0].string
 
-    bs2 = BeautifulSoup(content, 'lxml')
-    # 居中图片
-    for tab in bs2.select('img'):
-        tab.wrap(bs2.new_tag('div', style='text-align:center;'))
-        tab['style'] = "display: inline-block;"
-
-        # 删除gif
-        if task['save']['kw']['gif'] is False:
-            if 'gif' in tab['src']:
-                tab.decompose()
-                continue
-
-    content = str(bs2)
-
+    download_img_list, content = format_content(soup, task)
     items.append([md5string(article_url), title, content, created_time, '', author, int(time.time() * 100000)])
 
     if task['save']['kw'].get('img', True):
@@ -221,3 +194,36 @@ def resulter_downloader_img(task):
 
 def convert_link(x):
     return 'src="./static/{}"'.format(urlparse(x.group(1)).path[1:])
+
+
+def format_content(soup, task):
+    content_select = soup.select('.document')
+
+    # 移除每页后面无用的信息
+    if content_select:
+        for to_del in soup.select('.copyright'):
+            to_del.decompose()
+
+    content = str(content_select)
+    # bs4会自动加html和body 标签
+    content = re.sub('<html><body>(.*?)</body></html>', lambda x: x.group(1), content, flags=re.S)
+
+    # 去掉"[]"
+    content = content[1:-1]
+
+    bs2 = BeautifulSoup(content, 'lxml')
+    # 居中图片
+    for tab in bs2.select('img'):
+        tab.wrap(bs2.new_tag('div', style='text-align:center;'))
+        tab['style'] = "display: inline-block;"
+
+        # 删除gif
+        if task['save']['kw']['gif'] is False:
+            if 'gif' in tab['src']:
+                tab.decompose()
+
+    content = str(bs2)
+    download_img_list = (re.findall('src="(http.*?)"', content))
+    # 更换为本地相对路径
+    content = re.sub('src="(.*?)"', convert_link, content)
+    return download_img_list, content

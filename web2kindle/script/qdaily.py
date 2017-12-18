@@ -182,7 +182,6 @@ def parser_list(task):
 def parser_content(task):
     title = task['title']
     items = []
-    download_img_list = []
     new_tasks = []
 
     response = task['response']
@@ -204,32 +203,7 @@ def parser_content(task):
     created_time = task['created_time']
     article_url = task['url']
 
-    bs = BeautifulSoup(content, 'lxml')
-
-    # 居中图片
-    for tab in bs.select('img'):
-        if len(tab.attrs['class']) != 1:
-            tab.decompose()
-            continue
-
-        # 删除gif
-        if task['save']['kw']['gif'] is False:
-            if 'gif' in tab['data-src']:
-                tab.decompose()
-                continue
-
-        tab.wrap(bs.new_tag('div', style='text-align:center;'))
-        tab['style'] = "display: inline-block;"
-
-    content = str(bs)
-    # bs4会自动加html和body 标签
-    content = re.sub('<html><body>(.*?)</body></html>', lambda x: x.group(1), content, flags=re.S)
-
-    download_img_list.extend(re.findall('src="(http.*?)"', content))
-
-    # 更换为本地相对路径
-    content = re.sub('src="(.*?)"', convert_link, content)
-    content = content.replace('data-src', 'src')
+    download_img_list, content = format_content(content, task)
 
     items.append([md5string(article_url), title, content, created_time, voteup_count, author_name,
                   int(time.time() * 100000)])
@@ -263,9 +237,62 @@ def parser_downloader_img(task):
 
 
 def resulter_downloader_img(task):
-    write(os.path.join(task['save']['save_path'], 'static'), urlparse(task['response'].url).path[1:],
-          task['response'].content, mode='wb')
+    url = task['response'].url
+    g = re.search('(.*?)-', url)
+    if g:
+        url = g.group(1)
+    write(os.path.join(task['save']['save_path'], 'static'), urlparse(url).path[1:], task['response'].content,
+          mode='wb')
 
 
 def convert_link(x):
     return 'src="./static/{}"'.format(urlparse(x.group(1)).path[1:])
+
+
+def convert_img_link_to_kindle(x):
+    """
+    "http://img.qdaily.com/uploauploads/20171218153425JnZTgs3AMRdLy5lU.jpg-w600"
+    TO
+    "http://img.qdaily.com/uploauploads/20171218153425JnZTgs3AMRdLy5lU.jpg"
+
+    :param x:
+    :return:
+    """
+    url = x.group(1)
+    g = re.search('(.*?)-', url)
+    if g:
+        url = g.group(1)
+        result = 'src="{}"'.format(url)
+        return result
+    else:
+        return url
+
+
+def format_content(content, task):
+    # 去除空格
+    content = content.replace('</p><p>', '').replace('<br/>', '')
+    bs = BeautifulSoup(content, 'lxml')
+    # 居中图片
+    for tab in bs.select('img'):
+        if len(tab.attrs['class']) != 1:
+            tab.decompose()
+            continue
+
+        # 删除gif
+        if task['save']['kw']['gif'] is False:
+            if 'gif' in tab['data-src']:
+                tab.decompose()
+
+        tab.wrap(bs.new_tag('div', style='text-align:center;'))
+        tab['style'] = "display: inline-block;"
+
+    content = str(bs)
+    # bs4会自动加html和body 标签
+    content = re.sub('<html><body>(.*?)</body></html>', lambda x: x.group(1), content, flags=re.S)
+    download_img_list = re.findall('src="(http.*?)"', content)
+    # 更换为本地相对路径
+    content = re.sub('src="(.*?)"', convert_img_link_to_kindle, content)
+    content = re.sub('src="(.*?)"', convert_link, content)
+
+    content = content.replace('data-src', 'src')
+    return download_img_list, content
