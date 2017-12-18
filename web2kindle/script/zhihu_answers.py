@@ -35,6 +35,7 @@ DEFAULT_HEADERS = {
 }
 
 check_config(MAIN_CONFIG, SCRIPT_CONFIG, 'SAVE_PATH', LOG)
+ARTICLE_ID_SET = set()
 
 
 def main(zhihu_answers_list, start, end, kw):
@@ -46,6 +47,7 @@ def main(zhihu_answers_list, start, end, kw):
     oq = PriorityQueue()
     result_q = Queue()
     crawler = Crawler(iq, oq, result_q)
+    new = True
 
     for zhihu_answers in zhihu_answers_list:
         save_path = os.path.join(SCRIPT_CONFIG['SAVE_PATH'], zhihu_answers)
@@ -67,14 +69,19 @@ def main(zhihu_answers_list, start, end, kw):
             'retry': 3,
         })
         iq.put(task)
+
         # Init DB
         with ArticleDB(save_path, VERSION=0) as db:
-            pass
+            _ = db.select_all_article_id()
+        if _:
+            for each in _:
+                ARTICLE_ID_SET.add(each[0])
 
     crawler.start()
 
     for zhihu_answers in zhihu_answers_list:
         items = []
+        book_name = '知乎答主_{}'.format(zhihu_answers)
         save_path = os.path.join(SCRIPT_CONFIG['SAVE_PATH'], str(zhihu_answers))
 
         with ArticleDB(save_path) as db:
@@ -82,11 +89,16 @@ def main(zhihu_answers_list, start, end, kw):
             db.insert_meta_data(['BOOK_NAME', zhihu_answers])
             db.increase_version()
 
-        with HTML2Kindle(items, save_path, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
-            html2kindle.make_metadata(window=kw.get('window', 50))
-            html2kindle.make_book_multi(save_path)
+        if items:
+            new = True
+            with HTML2Kindle(items, save_path, book_name, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
+                html2kindle.make_metadata(window=kw.get('window', 50))
+                html2kindle.make_book_multi(save_path)
+        else:
+            LOG.log_it('无新项目', 'INFO')
+            new = False
 
-    if kw.get('email'):
+    if new and kw.get('email'):
         for zhihu_answers in zhihu_answers_list:
             with SendEmail2Kindle() as s:
                 s.send_all_mobi(os.path.join(SCRIPT_CONFIG['SAVE_PATH'], str(zhihu_answers)))
@@ -160,6 +172,7 @@ def get_answer(task):
     download_img_list = []
     response = task['response']
     items = []
+    to_next = True
 
     try:
         json_data = response.json()
@@ -183,58 +196,29 @@ def get_answer(task):
         new_tasks_list.append(new_task)
 
     for answer in json_data['data']:
-        title = answer['question']['title']
-
-        # 文件名太长无法制作mobi
-        if len(title) > 55:
-            _ = 55 - len(title) - 3
-            title = title[:_] + '...'
-
-        author_name = answer['author']['name']
-        author_headline = answer['author']['headline']
-        content = answer['content']
-        comment_count = answer['comment_count']
-        voteup_count = answer['voteup_count']
-        created_time = datetime.datetime.fromtimestamp(answer['created_time']).strftime('%Y-%m-%d')
         article_url = answer['url']
+        article_id = md5string(article_url)
+        # 如果在数据库里面已经存在的项目，就不继续爬了
+        if article_id not in ARTICLE_ID_SET:
+            title = answer['question']['title']
 
-        bs = BeautifulSoup(content, 'lxml')
+            author_name = answer['author']['name']
+            author_headline = answer['author']['headline']
+            content = answer['content']
+            comment_count = answer['comment_count']
+            voteup_count = answer['voteup_count']
+            created_time = datetime.datetime.fromtimestamp(answer['created_time']).strftime('%Y-%m-%d')
 
-        # 删除无用的img标签
-        for tab in bs.select('img[src^="data"]'):
-            tab.decompose()
+            _, content = format_zhihu_content(content, task)
+            download_img_list.extend(_)
 
-        # 居中图片
-        for tab in bs.select('img'):
-            if 'equation' not in tab['src']:
-                tab.wrap(bs.new_tag('div', style='text-align:center;'))
-                tab['style'] = "display: inline-block;"
+            items.append([md5string(article_url), title, content, created_time, voteup_count, author_name,
+                          int(time.time() * 100000)])
+        else:
+            to_next = False
 
-            # 删除gif
-            if task['save']['kw']['gif'] is False:
-                if 'gif' in tab['src']:
-                    tab.decompose()
-                    continue
-
-        content = str(bs)
-        # bs4会自动加html和body 标签
-        content = re.sub('<html><body>(.*?)</body></html>', lambda x: x.group(1), content, flags=re.S)
-
-        # 公式地址转换（傻逼知乎又换地址了）
-        # content = content.replace('//www.zhihu.com', 'http://www.zhihu.com')
-
-        download_img_list.extend(re.findall('src="(http.*?)"', content))
-
-        # 更换为本地相对路径
-        content = re.sub('src="(.*?)"', convert_link, content)
-
-        # 超链接的转换
-        content = re.sub('//link.zhihu.com/\?target=(.*?)"', lambda x: unquote(x.group(1)), content)
-        content = re.sub('<noscript>(.*?)</noscript>', lambda x: x.group(1), content, flags=re.S)
-        items.append([md5string(article_url), title, content, created_time, voteup_count, author_name,
-                      int(time.time() * 100000)])
-
-    if task['save']['kw'].get('img', True):
+    # 获取下一页
+    if to_next and task['save']['kw'].get('img', True):
         img_header = deepcopy(DEFAULT_HEADERS)
         img_header.update({'Referer': task['save']['base_url']})
         for img_url in download_img_list:
@@ -247,9 +231,11 @@ def get_answer(task):
                 'save': task['save'],
                 'priority': 3,
             }))
-
-    task.update({"parsed_data": items})
-    return task, new_tasks_list
+    if items:
+        task.update({"parsed_data": items})
+        return task, new_tasks_list
+    else:
+        return None, new_tasks_list
 
 
 def resulter_answers(task):
@@ -260,6 +246,12 @@ def resulter_answers(task):
 
 def parser_downloader_img(task):
     return task, None
+
+
+"""
+在convert_link函数里面md5(url)，然后转换成本地链接
+在resulter_downloader_img函数里面，将下载回来的公式，根据md5(url)保存为文件名
+"""
 
 
 def resulter_downloader_img(task):
@@ -278,9 +270,47 @@ def convert_link(x):
     # svg等式的保存
     else:
         url = x.group(1)
-        if url.startswith('//'):
-            url = 'http:' + url
-        else:
-            url = 'http://' + url
+        if not url.startswith('http'):
+            if url.startswith('//'):
+                url = 'http:' + url
+            else:
+                url = 'http://' + url
         a = 'src="./static/{}.svg"'.format(md5string(url))
         return a
+
+
+def format_zhihu_content(content: str, task):
+    download_img_list = []
+    # 去除空格
+    content = content.replace('</p><p>', '').replace('<br/>', '')
+    bs2 = BeautifulSoup(content, 'lxml')
+    for tab in bs2.select('img[src^="data"]'):
+        # 删除无用的img标签
+        tab.decompose()
+    # 居中图片
+    for tab in bs2.select('img'):
+        if 'equation' not in tab['src']:
+            tab.wrap(bs2.new_tag('div', style='text-align:center;'))
+            tab['style'] = "display: inline-block;"
+
+        # 删除gif
+        if task['save']['kw']['gif'] is False:
+            if 'gif' in tab['src']:
+                tab.decompose()
+
+    content = str(bs2)
+    # bs4会自动加html和body 标签
+    content = re.sub('<html><body>(.*?)</body></html>', lambda x: x.group(1), content, flags=re.S)
+
+    # 公式地址转换（傻逼知乎又换地址了）
+    # content = content.replace('//www.zhihu.com', 'http://www.zhihu.com')
+
+    # 需要下载的静态资源
+    download_img_list.extend(re.findall('src="(.*?)"', content))
+    # 更换为本地相对路径
+    content = re.sub('src="(.*?)"', convert_link, content)
+
+    # 超链接的转换
+    content = re.sub('//link.zhihu.com/\?target=(.*?)"', lambda x: unquote(x.group(1)), content)
+    content = re.sub('<noscript>(.*?)</noscript>', lambda x: x.group(1), content, flags=re.S)
+    return download_img_list, content
