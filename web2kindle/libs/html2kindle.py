@@ -122,7 +122,7 @@ class HTML2Kindle:
 
     @staticmethod
     def _make_book(kindlegen_path, log_path, path):
-        os.system("{} -dont_append_source {} >> {}".format(kindlegen_path, path, log_path))
+        os.system("{} -dont_append_source {}".format(kindlegen_path, path))
 
     def make_book_multi(self, rootdir, overwrite=True):
         from multiprocessing import Pool
