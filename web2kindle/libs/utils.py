@@ -33,9 +33,12 @@ def singleton(cls):
 
 def load_config(path):
     try:
-        f = open(path, 'r', encoding='utf-8')
-    except UnicodeDecodeError:
-        f = open(path, 'r')
+        try:
+            f = open(path, 'r', encoding='utf-8')
+        except UnicodeDecodeError:
+            f = open(path, 'r')
+    except FileNotFoundError:
+        return {}
     return yaml.load(f)
 
 
