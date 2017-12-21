@@ -151,9 +151,9 @@ def make_mobi(multi, path, window):
 
     items = []
     with ArticleDB(path) as db:
+        db.reset_version()
         items.extend(db.select_article())
         book_name = db.select_meta('BOOK_NAME')
-        db.increase_version()
 
     if items:
         with HTML2Kindle(items, path, book_name, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
