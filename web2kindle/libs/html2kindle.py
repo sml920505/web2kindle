@@ -39,7 +39,8 @@ class HTML2Kindle:
             os.makedirs(path)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.remove()
+        pass
+        # self.remove()
 
     def __enter__(self):
         return self
@@ -77,7 +78,7 @@ class HTML2Kindle:
                 article_path = os.path.join(self.path, format_file_name(item[1], item[5]) + '.html')
                 if os.path.exists(article_path):
                     # 防止文件名重复
-                    article_path = article_path + ''.join(random_char(3))
+                    article_path = article_path.replace('.html', '') + ''.join(random_char(3)) + '.html'
 
                 self.make_content(item[1], item[2], article_path, kw)
                 # 标记，以便删除
