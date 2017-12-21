@@ -2,64 +2,11 @@
 
 `Web2kindle`项目提供一系列脚本，将知乎、果壳等网站的内容批量获取并解析打包成`mobi`格式供Kindle阅读。
 
-# TODO
-* 知乎登录功能
-* 分页合页
-
-
-# 更新日志
-
-### 0.1.0.0
-
-测试版第一版
-
-### 0.1.0.1
-
-* 修复了一直重试的Bug，默认重试次数为3。
-* 文章里面可以显示作者、创建时间、赞数。
-* 设置开始和结束的范围（page参数已荒废）。
-* 修复了专栏倒叙的Bug。
-* 配置文件更改为YAML格式。
-* 可以修改`Download`和`Parser`的数量。
-
-### 0.1.1.0
-
-* Task注册功能（自动判断无任务）
-
-### 0.1.1.1
-
-* 无图模式
-* 修复知乎公式无法显示的Bug
-* 新增单独制作电子书命令行
-* 修复重复文件名导致不能制作mobi的Bug
-
-### 0.1.2.0
-
-* 添加果壳网脚本
-* 添加了Linux,Mac的支持
-
-### 0.1.2.1
-* 自动获取KINDLEGEN_PATH，配置文件里面不用写了
-* 添加WRITE_LOG参数，可以自己选择写日志与否
-* 添加fix_mobi脚本
-* 修复了文件名太长而导致无法制作mobi的bug
-
-### 0.1.2.2
-* 添加"-dont_append_source"参数，大大减小mobi的体积
-
-### 0.1.2.3
-* 知乎前端更新
-
-### 0.1.3.0
-
-* 添加好奇心日报脚本
-* 为减少体积。默认不下载gif。如需要下载加上`--gif`参数。
-
 # 使用方法
 
 ## 安装Python
 
-本程序使用Python3.6编写，您可前往[Python官网](https://www.python.org/)下载大于Python3.6的版本。
+本程序使用Python3编写，您可前往[Python官网](https://www.python.org/)下载大于Python3的版本。
 
 ## 安装依赖库
 
@@ -70,13 +17,45 @@ pip install -r requirement
 
 ## 配置
 
-配置文件在`config`目录下。配置文件其实是一个`yml`文件。
+配置文件在`config`目录下。配置文件其实是一个`yml`文件。参考[配置](./配置)与[脚本](脚本)两章配置好配置文件。
 
-参考[配置](./配置)与[脚本](脚本)两章配置好配置文件。
+以`Web2kindle 0.2.0.0`版本为例。配置项就有：
+
+- KINDLEGEN_PATH(可选)：KindleGen.exe程序所在路径
+- SAVE_PATH(可选)：全局保存路径。优先使用各个脚本独立的`SAVE_PATH`。
+
+
+- LOG_PATH(可选)：日志文件的路径
+- LOG_LEVEL：日志等级
+- WRITE_LOG(可选) : 是否写日志文件，默认否
+
+
+- DOWNLOADER_WORKER(可选)：启动Downloader的数量，默认为1，建议为1~3。
+- PARSER_WORKER(可选)：启动Parser的数量，默认为1，建议为1。
+- RESULTER_WORKER(可选)：启动Resulter的数量，默认为1，建议为1
+
+
+- EMAIL_USERNAME(可选)：发送给Kindle的邮箱地址
+- PASSWORD(可选)：发送给Kindle的邮箱密码
+- SMTP_ADDR(可选)：发送给Kindle的邮箱SMTP。一般，163邮箱的为`smtp.163.com`；QQ邮箱为`smtp.qq.com`。
+- KINDLE_ADDR(可选)：Kindle接受推送的邮箱。
+
+我们尝试编写一个如下的配置文件：
+
+```
+# 注意冒号旁的两个空格，且所有符号为半角符号（即英文输入法时打出的符号）
+SAVE_PATH : 'd:\Web2kinlde_data'
+LOG_LEVEL : 'INFO'
+DOWNLOADER_WORKER : 3
+```
+
+请确保配置项所指向的`d:\Web2kinlde_data`文件夹不含中文且确实存在。最后我们保存名为`config.yml`的文件。放在`根目录/web2kindle/config`文件夹
 
 ## 放置Kindlegen程序
 
-进入`web2kindle/bin`文件夹。将下载好的`Kindlegen`程序放入该文件夹内。按如下规则重命名。
+访问[web2kindle百度云地址](http://pan.baidu.com/s/1kV8Bqpp)下载最新版`Kindlegen`，并解压。
+
+进入`web2kindle/bin`文件夹。将下载好的`Kindlegen`程序放入该文件夹内。`Web2kindle`按照如下规则自动识别。
 
 * Linux:kindlegen_linux
 * Mac:kindlegen_mac
@@ -113,10 +92,6 @@ python main.py zhihu_collection --f="C:\Users\vincent8280\web2kindle\a.txt"
 [2017-10-11 21:44:33,659][Parser 0] 获取新任务31个。
 [2017-10-11 21:44:33,728][Downloader 0] 请求 https://pic1.zhimg.com/048d1383a27aa22284945f140d72ef74_b.png
 .....
-[2017-10-11 21:44:36,601][Downloader 0] 请求 https://pic4.zhimg.com/1688f4754c030827305f0afe99d9d023_b.png
-[2017-10-11 21:44:36,685][Downloader 0] Scheduler to Downloader队列为空，Downloader 0等待中。
-[2017-10-11 21:44:36,685][Downloader 0] Downloader to Parser队列不为空。Downloader 0被唤醒。
-[2017-10-11 21:44:36,701][Downloader 0] Scheduler to Downloader队列为空，Downloader 0等待中。
 
 *************************************************************
  Amazon kindlegen(Windows) V2.9 build 1029-0897292
@@ -141,32 +116,82 @@ python main.py zhihu_collection --f="C:\Users\vincent8280\web2kindle\a.txt"
 
 调用KindleGen制作电子书部分为多进程，所以部分显示不正常。
 
+## 推送到Kindle
+
+如果需要推送到Kindle，需要在`config.yml`文件里面新增如下配置项。
+
+```
+EMAIL_USERNAME : example@163.com
+PASSWORD : my_password
+SMTP_ADDR : smtp.163.com
+KINDLE_ADDR : example@kindle.cn
+```
+
+- EMAIL_USERNAME(可选)：发送给Kindle的邮箱的地址。
+- PASSWORD(可选)：发送给Kindle的邮箱的密码。
+- SMTP_ADDR(可选)：发送给Kindle的邮箱SMTP。一般，163邮箱的为`smtp.163.com`；QQ邮箱为`smtp.qq.com`。
+- KINDLE_ADDR(可选)：kindle接受推送的邮箱地址。
+
+在运行的时候，需加上`--email`参数。如：
+
+```
+python main.py zhihu_collection --i=191640375 --email
+```
+
+注意，该推送将会推送目标文件夹下面所有mobi文件。
+
+## 增量更新
+
+在运行过一次`Web2kindle`之后，在目标文件夹下面出现一个名为`article.db`的数据库文件。`Web2kindle`每次下载的时候都会检查这个数据库，避免重复下载。
+
+举个例子，比如我知乎专门有一个收藏夹收藏要推送到Kindle的文章。每天我在知乎上收藏十篇文章到这个收藏夹，我希望使用`Web2kinlde`每天仅下载新增的十篇文章而不是把全部文章都获取下来。那么在运行一次`main.exe zhihu_collection --i=191640375`获取`191640375`所有内容之后。当我第二天再往这个收藏夹新增十篇文章，当我再次运行，`Web2kindle`会仅仅下载新增的那十篇文章而不会把收藏夹里全部文章重新下载一遍。
+
+这个功能称之为`增量更新`。如果你不需要这种功能，你可以手动删除目标文件夹下面的`article.db`文件。
+
 # 配置
 
 配置文件在`config`目录下。配置文件其实是一个`yml`文件，该文件以`yml`为后缀名。对于每个单独的脚本都有不同的配置文件，另有一个`config.yml`通用配置文件。
 
 ## config.yml
 
-```
-# 注意冒号旁的两个空格
-KINDLEGEN_PATH : 'C:\Users\web2kinle_save\kindlegen.exe'
-LOG_PATH : 'C:\Users\web2kinle_save\log'
-LOG_LEVEL : 'DEBUG'
-DOWNLOADER_WORKER : 1
-PARSER_WORKER : 1
-```
-
 - KINDLEGEN_PATH(可选)：KindleGen.exe程序所在路径
+- SAVE_PATH(可选)：全局保存路径。优先使用各个脚本独立的`SAVE_PATH`。
+
+
+
 - LOG_PATH(可选)：日志文件的路径
 - LOG_LEVEL：日志等级
 - WRITE_LOG(可选) : 是否写日志文件，默认否
-- DOWNLOADER_WORKER(可选)：启动Downloader的数量，建议为1~3。
-- PARSER_WORKER(可选)：启动Parser的数量，建议为1。
-- SAVE_PATH(可选)：全局保存路径。优先使用各个脚本独立的`SAVE_PATH`。
+
+
+
+- DOWNLOADER_WORKER(可选)：启动Downloader的数量，默认为1，建议为1~3。
+- PARSER_WORKER(可选)：启动Parser的数量，默认为1，建议为1。
+- RESULTER_WORKER(可选)：启动Resulter的数量，默认为1，建议为1
+
+下面参数与推送有关
+- EMAIL_USERNAME(可选)：发送给Kindle的邮箱地址
+- PASSWORD(可选)：发送给Kindle的邮箱密码
+- SMTP_ADDR(可选)：发送给Kindle的邮箱SMTP。一般，163邮箱的为`smtp.163.com`；QQ邮箱为`smtp.qq.com`。
+- KINDLE_ADDR(可选)：Kindle接受推送的邮箱。
+
+## 为每个脚本写单独的配置文件
+
+我们可以为每个脚本编写一个单独的配置文件。我们可以在[Web2kinlde脚本](https://github.com/wax8280/web2kindle#脚本)下找到每个脚本所需的配置文件。
+
+如`zhihu_collection`这个脚本的配置：
+
+在`config`目录下新建一个`zhihu_collection_config.yml`文件。
+
+```
+SAVE_PATH : 'C:\Users\web2kinle_save'
+```
+
+- SVAE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
 # 脚本
 
-对于每个网站都要编写不同的脚本来获取、解析、清洗元数据，最后调用`HTML2Kindle`类的`make_opf`、`make_content`、`make_table`来制作OPF、内容、目录文件。
+对于每个网站都要编写不同的脚本来获取、解析、清洗元数据，最后制作mobi电子书。
 
 我们可以通过以下命令来运行脚本
 
@@ -190,20 +215,17 @@ python main.py make_mobi --path="F:\source"
 
 - --single：使用单进程（默认多进程）
 
-### fix_mobi
+### send_mobi
 
-修复（重新扫描目录，制作目录中没有制作的电子书）
+发送目录下所有的mobi文件到指定的邮箱
+
 ```
-python main.py fix_mobi --path="F:\source"
+python main.py send_mobi --path="F:\source"
 ```
 
 #### 参数
 
 - --path：目标路径
-
-可选参数：
-
-- --single：使用单进程（默认多进程）
 
 ## 知乎
 
@@ -237,6 +259,7 @@ python main.py zhihu_collection --f="c:\a.txt"
 - --end：结束页码数，如要第十页结束`--end=10`
 - --no-img：不下载图片
 - --gif：下载gif
+- --email：推送
 
 #### 配置
 
@@ -277,6 +300,7 @@ alenxwn
 - --end：结束篇数，如要第十篇结束`--end=10`
 - --no-img：不下载图片
 - --gif：下载gif
+- --email：推送
 
 #### 配置
 
@@ -318,6 +342,7 @@ chen-zi-long-50-58
 - --end：结束篇数，如要第十篇结束`--end=10`
 - --no-img：不下载图片
 - --gif：下载gif
+- --email：推送
 
 #### 配置
 
@@ -344,6 +369,7 @@ python main.py guoke_scientific
 - --end：结束篇数，如要第四十篇结束`--end=40`
 - --no-img：不下载图片
 - --gif：下载gif
+- --email：推送
 
 #### 配置
 
@@ -371,7 +397,7 @@ python main.py qdaily
 可选参数：
 
 - --start：开始日期，如`--start=2017-12-12`。默认今天。
-- --end：结束篇数，如`--start=2017-12-12`。默认今天。
+- --end：结束篇数，如`--start=2017-12-12`。默认今天。因为是倒叙获取，`start`参数的日期必须大于或等于`end`参数的日期。
 - --no-img：不下载图片。
 - --gif：下载gif
 - --type：制定类型，默认为`home`
@@ -384,6 +410,7 @@ python main.py qdaily
   - city：城市
   - game：游戏
   - long：长文章
+- --email：推送
 
 #### 配置
 
@@ -395,66 +422,67 @@ SAVE_PATH : 'C:\Users\web2kinle_save'
 
 - SVAE_PATH：保存路径名。
 
-# KindleGen
+# TODO
 
-本项目使用Amazon官方的KindleGen生产mobi格式的电子书。
+- 知乎登录功能
+- ​
 
-制作mobi必须编写两个文件：opf和ncx。他们可以理解为KindleGen的makefile，KindleGen通过这两个文件索引HTML，目录和其他多媒体资源。
+# 更新日志
 
-## OPF
+### 0.1.0.0
 
-```html
-<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="BookId">
-<metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-<dc:title>电子书标题</dc:title>
-<dc:language>en-us</dc:language>
-</metadata>
-<manifest>
-     <!-- table of contents [mandatory] -->
-    <item id="tochtml" media-type="application/xhtml+xml" href="toc.html"/>
-    <item id="item0" media-type="application/xhtml+xml" href="Artical-1277621753.html"/>
-    ...
-    <!--下面是图片-->
-     <item id="0.368541311142" media-type="image/jpg" href="Images/-1720404282.jpg"/>
-</manifest>
-<spine toc="desertfire">
-  <!-- 下面描述了KG生成电子书后文本的顺序 -->
-    <itemref idref="toc"/>  
-    <itemref idref="tochtml"/>  
-    <itemref idref="item31"/>
-</spine>
-<guide>
-    <reference type="toc" title="Table of Contents" href="toc.html"></reference>
-    <reference type="text" title="Welcome" href="toc.html"></reference>
-</guide>
-</package>
-```
+测试版第一版
 
-| 类型                | 作用            | 必须           |
-| ----------------- | ------------- | ------------ |
-| title             | 显示在封面的标题      | 是            |
-| table of contents | 所有资源和对应的id    | 必须，id需要全局一致  |
-| spine             | 给出生产电子书后页面的顺序 | 默认按照资源声明顺序浏览 |
-| guide             | 提供目录的html等    | 可选           |
+### 0.1.0.1
 
-需要注意的有以下几点：
+- 修复了一直重试的Bug，默认重试次数为3。
+- 文章里面可以显示作者、创建时间、赞数。
+- 设置开始和结束的范围（page参数已荒废）。
+- 修复了专栏倒叙的Bug。
+- 配置文件更改为YAML格式。
+- 可以修改`Download`和`Parser`的数量。
 
-- 所有资源都需要一个id,命名任意，但不能重复。
-- `media-type`描述了资源的类型，记住两类基本就够用了，`application/xhtml+xml`代表HTML文件，`image/jpg`或 `image/png`代表图片。
-- 其他都可以省略，只是会影响电子书完整性。
-- 由于这两个文件内部其实都是HTML，所以修改编辑都很容易。
+### 0.1.1.0
 
-## HTML
+- Task注册功能（自动判断无任务）
 
-KindleGen只需要一个`<body>`标签即可。
+### 0.1.1.1
 
-```html
-<body>
-<head><meta charset="UTF-8"/></head>
-内容
-</body>
-```
+- 无图模式
+- 修复知乎公式无法显示的Bug
+- 新增单独制作电子书命令行
+- 修复重复文件名导致不能制作mobi的Bug
 
-## 注意事项
+### 0.1.2.0
 
-本人遇过KindleGen转换出乱码的情况，后来通过“带BOM的UTF-8”编码解决。
+- 添加果壳网脚本
+- 添加了Linux，Mac的支持
+
+### 0.1.2.1
+
+- 自动获取`KINDLEGEN_PATH`，配置文件里面不用写了
+- 添加`WRITE_LOG`参数，可以自己选择写日志与否
+- 添加`fix_mobi`脚本
+- 修复了文件名太长而导致无法制作mobi的bug
+
+### 0.1.2.2
+
+- 添加"-dont_append_source"参数，大大减小mobi的体积
+
+### 0.1.2.3
+
+- 知乎前端更新
+
+### 0.1.3.0
+
+- 添加好奇心日报脚本
+- 为减少体积。默认不下载gif。如需要下载加上`--gif`参数。
+
+### 0.2.0.0
+
+* 支持增量更新
+* 修复很多bug
+* 支持邮箱推送功能
+* 新增了更人性化的目录
+* 取消`fix_mobi`脚本
+
