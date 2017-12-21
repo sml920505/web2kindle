@@ -139,30 +139,32 @@ def qdaily(start, end, img, type, gif, email):
 @cli.command('make_mobi')
 @click.option('--multi/--single', default=True)
 @click.option('--path')
-def make_mobi(multi, path):
+@click.option('--window', default=50)
+def make_mobi(multi, path, window):
+    from web2kindle.libs.db import ArticleDB
+    from web2kindle import MAIN_CONFIG
+    from web2kindle.libs.html2kindle import HTML2Kindle
+
     if not path:
         import os
         path = os.getcwd()
 
-    from web2kindle.libs.utils import HTML2Kindle
-    html2kindle = HTML2Kindle()
-    html2kindle.make_book_multi(path) if multi else html2kindle.make_book(path)
+    items = []
+    with ArticleDB(path) as db:
+        items.extend(db.select_article())
+        book_name = db.select_meta('BOOK_NAME')
+        db.increase_version()
+
+    if items:
+        with HTML2Kindle(items, path, book_name, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
+            html2kindle.make_metadata(window)
+            if multi:
+                html2kindle.make_book_multi(path)
+            else:
+                html2kindle.make_book(path)
 
 
-@cli.command('fix_mobi')
-@click.option('--multi/--single', default=True)
-@click.option('--path')
-def fix_mobi(multi, path):
-    if not path:
-        import os
-        path = os.getcwd()
-
-    from web2kindle.libs.utils import HTML2Kindle
-    html2kindle = HTML2Kindle()
-    html2kindle.make_book_multi(path, False) if multi else html2kindle.make_book(path, False)
-
-
-@cli.command('fix_mobi')
+@cli.command('send_mobi')
 @click.option('--path')
 def send_mobi(path):
     if not path:
