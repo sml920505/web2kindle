@@ -143,7 +143,6 @@ def parser_list(task):
 
     if not response:
         raise RetryDownload
-
     try:
         data = response.json()
     except Exception as e:
@@ -154,7 +153,7 @@ def parser_list(task):
     try:
         for item in data['data']['feeds']:
             if item['datatype'] == 'article':
-                article_url = 'https://www.qdaily.com/articles/{}.html'.format(str(item['id']))
+                article_url = 'https://www.qdaily.com/articles/{}.html'.format(str(item['post']['id']))
                 article_id = md5string(article_url)
                 # 如果在数据库里面已经存在的项目，就不继续爬了
                 if article_id not in ARTICLE_ID_SET:
@@ -182,16 +181,17 @@ def parser_list(task):
                     to_next = False
 
         # Next page
-        if to_next and len(data['data']) != 0:
-            if data['data']['last_key'] > task['save']['end'] - 144209:
-                next_page_task = deepcopy(task)
-                next_page_task.update(
-                    {'url': API_URL.format(data['data']['last_key'])})
-                next_page_task['save'].update({'cursor': data['data']['last_key'], 'page': task['save']['page'] + 1})
-                new_tasks.append(next_page_task)
-        else:
-            LOG.log_it('不能读取专栏列表。（如一直出现，而且浏览器能正常访问，可能是代码升级，请通知开发者。）', 'WARN')
-            raise RetryDownload
+        if to_next:
+            if len(data['data']) != 0:
+                if data['data']['last_key'] > task['save']['end']:
+                    next_page_task = deepcopy(task)
+                    next_page_task.update(
+                        {'url': API_URL.format(data['data']['last_key'])})
+                    next_page_task['save'].update({'cursor': data['data']['last_key'], 'page': task['save']['page'] + 1})
+                    new_tasks.append(next_page_task)
+            else:
+                LOG.log_it('不能读取列表。（如一直出现，而且浏览器能正常访问，可能是代码升级，请通知开发者。）', 'WARN')
+                raise RetryDownload
 
     except KeyError:
         LOG.log_it('JSON KEY出错（如一直出现，而且浏览器能正常访问，可能是网站代码升级，请通知开发者。）', 'WARN')
@@ -297,14 +297,14 @@ def format_content(content, task):
         if len(tab.attrs['class']) != 1:
             tab.decompose()
             continue
+        tab.wrap(bs.new_tag('div', style='text-align:center;'))
+        tab['style'] = "display: inline-block;"
 
         # 删除gif
         if task['save']['kw']['gif'] is False:
             if 'gif' in tab['data-src']:
                 tab.decompose()
 
-        tab.wrap(bs.new_tag('div', style='text-align:center;'))
-        tab['style'] = "display: inline-block;"
 
     content = str(bs)
     # bs4会自动加html和body 标签
