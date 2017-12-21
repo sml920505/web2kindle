@@ -5,15 +5,13 @@
 #         http://wax8280.github.io
 # Created on 17-12-14 下午8:23
 import codecs
-import random
-from multiprocessing import cpu_count
-
 import os
+from multiprocessing import cpu_count
 from jinja2 import Template
 from functools import partial
 
 from web2kindle.libs.log import Log
-from web2kindle.libs.utils import read_file, get_system, format_file_name, split_list
+from web2kindle.libs.utils import read_file, get_system, format_file_name, split_list, random_char
 
 if get_system() == 'Linux':
     KINDLE_GEN_PATH = './web2kindle/bin/kindlegen_linux'
@@ -30,24 +28,17 @@ class HTML2Kindle:
     ncx_template = Template(read_file('./web2kindle/templates/kindle_ncx.ncx'))
 
     def __init__(self, items, path, book_name, kindlegen_path=KINDLE_GEN_PATH):
-        # self.template_env = Environment(loader=PackageLoader('web2kindle'))
-        # self.content_template = self.template_env.get_template('kindle_content.html')
-        # self.opf_template = self.template_env.get_template('kindle_opf.html')
-        # self.index_template = self.template_env.get_template('kindle_table.html')
-        # 打包成exe之后会有bug
         self.kindlegen_path = kindlegen_path if kindlegen_path is not None else KINDLE_GEN_PATH
-
         self.items = items
         self.book_name = str(book_name)
         self.path = path
         self.to_remove = set()
         self.log = Log('HTML2Kindle')
 
-        if not os.path.exists(os.path.split(path)[0]):
-            os.makedirs((os.path.split(path)[0]))
+        if not os.path.exists(path):
+            os.makedirs(path)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
         self.remove()
 
     def __enter__(self):
@@ -86,8 +77,7 @@ class HTML2Kindle:
                 article_path = os.path.join(self.path, format_file_name(item[1], item[5]) + '.html')
                 if os.path.exists(article_path):
                     # 防止文件名重复
-                    article_path = article_path + ''.join(
-                        [chr(random.choice(list(set(range(65, 123)) - set(range(91, 97))))) for i in range(3)])
+                    article_path = article_path + ''.join(random_char(3))
 
                 self.make_content(item[1], item[2], article_path, kw)
                 # 标记，以便删除

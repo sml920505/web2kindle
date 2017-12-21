@@ -10,16 +10,17 @@ import time
 from copy import deepcopy
 from queue import Queue, PriorityQueue
 from urllib.parse import urlparse, unquote
+from bs4 import BeautifulSoup
+
+from web2kindle import MAIN_CONFIG
 from web2kindle.libs.crawler import Crawler, RetryDownload, Task
 from web2kindle.libs.db import ArticleDB
 from web2kindle.libs.html2kindle import HTML2Kindle
 from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, md5string, load_config, check_config
 from web2kindle.libs.log import Log
-from bs4 import BeautifulSoup
 
 SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_zhuanlan_config.yml')
-MAIN_CONFIG = load_config('./web2kindle/config/config.yml')
 LOG = Log("zhihu_zhuanlan")
 DEFAULT_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'
@@ -34,7 +35,8 @@ def main(zhuanlan_name_list, start, end, kw):
     iq = PriorityQueue()
     oq = PriorityQueue()
     result_q = Queue()
-    crawler = Crawler(iq, oq, result_q)
+    crawler = Crawler(iq, oq, result_q, MAIN_CONFIG.get('PARSER_WORKER', 1), MAIN_CONFIG.get('DOWNLOADER_WORKER', 1),
+                      MAIN_CONFIG.get('RESULTER_WORKER', 1))
     new = True
 
     for zhuanlan_name in zhuanlan_name_list:
@@ -157,10 +159,8 @@ def parser_content(task):
         raise RetryDownload
 
     author_name = bs.select('.PostIndex-authorName')[0].string if bs.select('.PostIndex-authorName') else ''
-
     voteup_count = re.search('likesCount&quot;:(\d+),', response.text).group(1) if re.search(
         'likesCount&quot;:(\d+),', response.text) else ''
-
     created_time = str(bs.select('.PostIndex-header .HoverTitle')[1]['data-hover-title']) if len(
         bs.select('.PostIndex-header .HoverTitle')) == 2 else ''
     article_url = task['url']

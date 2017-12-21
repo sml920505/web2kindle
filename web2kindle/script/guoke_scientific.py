@@ -10,17 +10,17 @@ import time
 from copy import deepcopy
 from queue import Queue, PriorityQueue
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
+from web2kindle import MAIN_CONFIG
 from web2kindle.libs.crawler import Crawler, RetryDownload, Task
 from web2kindle.libs.db import ArticleDB
 from web2kindle.libs.html2kindle import HTML2Kindle
 from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, load_config, check_config, md5string
 from web2kindle.libs.log import Log
-from bs4 import BeautifulSoup
 
 SCRIPT_CONFIG = load_config('./web2kindle/config/guoke_scientific_config.yml')
-MAIN_CONFIG = load_config('./web2kindle/config/config.yml')
 LOG = Log("guoke_scientific")
 API_URL = "http://www.guokr.com/apis/minisite/article.json?retrieve_type=by_subject&limit=20&offset={}&_=1508757235776"
 DEFAULT_HEADERS = {
@@ -28,13 +28,17 @@ DEFAULT_HEADERS = {
                   '61.0.3163.100 Safari/537.36'
 }
 check_config(MAIN_CONFIG, SCRIPT_CONFIG, 'SAVE_PATH', LOG)
+ARTICLE_ID_SET = set()
 
 
 def main(start, end, kw):
     iq = PriorityQueue()
     oq = PriorityQueue()
     result_q = Queue()
-    crawler = Crawler(iq, oq, result_q)
+    crawler = Crawler(iq, oq, result_q, MAIN_CONFIG.get('PARSER_WORKER', 1), MAIN_CONFIG.get('DOWNLOADER_WORKER', 1),
+                      MAIN_CONFIG.get('RESULTER_WORKER', 1))
+    new = True
+
     default_headers = deepcopy(DEFAULT_HEADERS)
     default_headers.update({'Referer': 'http://www.guokr.com/scientific/'})
     save_path = SCRIPT_CONFIG['SAVE_PATH']
@@ -57,22 +61,29 @@ def main(start, end, kw):
     iq.put(task)
     # Init DB
     with ArticleDB(save_path, VERSION=0) as db:
-        pass
+        _ = db.select_all_article_id()
+    if _:
+        for each in _:
+            ARTICLE_ID_SET.add(each[0])
 
     crawler.start()
 
     items = []
-
     with ArticleDB(save_path) as db:
         items.extend(db.select_article())
         db.insert_meta_data(['BOOK_NAME', book_name])
         db.increase_version()
 
-    with HTML2Kindle(items, save_path, book_name, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
-        html2kindle.make_metadata(window=kw.get('window', 50))
-        html2kindle.make_book_multi(save_path)
+    if items:
+        new = True
+        with HTML2Kindle(items, save_path, book_name, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
+            html2kindle.make_metadata(window=kw.get('window', 50))
+            html2kindle.make_book_multi(save_path)
+    else:
+        LOG.log_it('无新项目', 'INFO')
+        new = False
 
-    if kw.get('email'):
+    if new and kw.get('email'):
         with SendEmail2Kindle() as s:
             s.send_all_mobi(SCRIPT_CONFIG['SAVE_PATH'])
     os._exit(0)
@@ -81,6 +92,7 @@ def main(start, end, kw):
 def parser_list(task):
     response = task['response']
     new_tasks = []
+    to_next = True
 
     if not response:
         LOG.log_it("Not Response", 'WARN')
@@ -95,36 +107,40 @@ def parser_list(task):
 
     try:
         for each_result in data['result']:
-            title = each_result['title']
             url = each_result['url']
-            date_group = re.search('(.*?)T(.*?)\+', each_result['date_created'])
-            date = date_group.group(1) + ' ' + date_group.group(2)
+            article_id = md5string(url)
+            if article_id not in ARTICLE_ID_SET:
+                title = each_result['title']
+                date_group = re.search('(.*?)T(.*?)\+', each_result['date_created'])
+                date = date_group.group(1) + ' ' + date_group.group(2)
 
-            meta = deepcopy(task['meta'])
-            save = deepcopy(task['save'])
-            save.update({
-                'title': title,
-                'date': date
-            })
-            new_task = Task.make_task({
-                'url': url,
-                'method': 'GET',
-                'parser': parser_content,
-                'resulter': resulter_content,
-                'priority': 1,
-                'meta': meta,
-                'save': save
-            })
-            new_tasks.append(new_task)
+                meta = deepcopy(task['meta'])
+                save = deepcopy(task['save'])
+                save.update({
+                    'title': title,
+                    'date': date
+                })
+                new_task = Task.make_task({
+                    'url': url,
+                    'method': 'GET',
+                    'parser': parser_content,
+                    'resulter': resulter_content,
+                    'priority': 1,
+                    'meta': meta,
+                    'save': save
+                })
+                new_tasks.append(new_task)
+            else:
+                to_next = False
     except KeyError:
         LOG.log_it('JSON KEY出错（如一直出现，而且浏览器能正常访问，可能是网站代码升级，请通知开发者。）', 'WARN')
         raise RetryDownload
 
     # 获取下一页
-    meta = deepcopy(task['meta'])
-    save = deepcopy(task['save'])
-    save['cursor'] += 20
-    if save['cursor'] < save['end'] and not len(data['result']) < 20:
+    if to_next and task['save'] < task['save'] and not len(data['result']) < 20:
+        meta = deepcopy(task['meta'])
+        save = deepcopy(task['save'])
+        save['cursor'] += 20
         new_task = Task.make_task({
             'url': API_URL.format(save['cursor']),
             'method': 'GET',

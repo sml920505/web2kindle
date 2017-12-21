@@ -4,7 +4,6 @@
 # Author: Vincent<vincent8280@outlook.com>
 #         http://wax8280.github.io
 # Created on 2017/10/10 9:53
-import re
 import traceback
 import time
 from queue import PriorityQueue, Empty, Queue
@@ -13,7 +12,6 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from threading import Thread, Condition, Lock
 
-from web2kindle.libs import CRAWLER_CONFIG
 from web2kindle.libs.log import Log
 from web2kindle.libs.utils import singleton, md5string
 
@@ -116,10 +114,8 @@ class Task(dict):
         if 'parser' not in params:
             # FIXME:Can't raise Exception in there
             raise Exception("Need a parser")
-
         if 'method' not in params:
             raise Exception("Need a method")
-
         if 'url' not in params:
             raise Exception("Need a url")
 
@@ -168,7 +164,8 @@ class TaskManager:
 
 
 class Downloader(Thread):
-    def __init__(self, to_download_q: PriorityQueue,
+    def __init__(self,
+                 to_download_q: PriorityQueue,
                  downloader_parser_q: PriorityQueue,
                  result_q: Queue,
                  name: str,
@@ -206,7 +203,6 @@ class Downloader(Thread):
         try:
             response = self.session.request(task['method'], task['url'], **task.get('meta', {}))
         except Exception as e:
-            # traceback.print_exc(file=open(os.path.join(config.get('LOG_PATH'), 'downlaoder_traceback'), 'a'))
             traceback.print_exc()
             self.log.log_it("网络请求错误。错误信息:{} URL:{} Response:{}".format(str(e), task['url'], response), 'INFO')
             if task.get('retry', None):
@@ -255,15 +251,13 @@ class Parser(Thread):
 
         try:
             task_with_parsed_data, tasks = task['parser'](task)
-            if tasks and isinstance(tasks, list):
+            if tasks:
+                if not isinstance(tasks, list):
+                    tasks = [tasks]
                 self.log.log_it("获取新任务{}个。".format(len(tasks)), 'INFO')
-                for new_task in tasks:
-                    self.task_manager.register(new_task['tid'])
-                    self.to_download_q.put(new_task)
-            elif tasks:
-                self.log.log_it("获取新任务1个。", 'INFO')
-                self.task_manager.register(tasks['tid'])
-                self.to_download_q.put(tasks)
+                for each_task in tasks:
+                    self.task_manager.register(each_task['tid'])
+                    self.to_download_q.put(each_task)
         except RetryDownload:
             self.log.log_it("RetryDownload Exception.Task{}".format(task), 'INFO')
             if task.get('retry', None):
@@ -287,8 +281,6 @@ class Parser(Thread):
             self.downloader_parser_q.put(task)
             return
         except Exception as e:
-            # FIXME FileNotFoundError
-            # traceback.print_exc(file=open(os.path.join(config.get('LOG_PATH'), 'parser_traceback'), 'a'))
             traceback.print_exc()
             self.log.log_it("解析错误。错误信息：{}。Task：{}".format(str(e), task), 'WARN')
             return
@@ -370,8 +362,6 @@ class Resulter(Thread):
             return
 
         except Exception as e:
-            # FIXME FileNotFoundError
-            # traceback.print_exc(file=open(os.path.join(config.get('LOG_PATH'), 'parser_traceback'), 'a'))
             traceback.print_exc()
             self.log.log_it("Resulter函数错误。错误信息：{}。Task：{}".format(str(e), task), 'WARN')
 
@@ -382,12 +372,12 @@ class Resulter(Thread):
 
 class Crawler:
     def __init__(self,
-                 to_download_q,
-                 downloader_parser_q,
-                 result_q,
-                 parser_worker_count=CRAWLER_CONFIG.get('PARSER_WORKER', 1),
-                 downloader_worker_count=CRAWLER_CONFIG.get('DOWNLOADER_WORKER', 1),
-                 resulter_worker_count=CRAWLER_CONFIG.get('RESULTER_WORKER', 1),
+                 to_download_q: PriorityQueue,
+                 downloader_parser_q: PriorityQueue,
+                 result_q: Queue,
+                 parser_worker_count,
+                 downloader_worker_count,
+                 resulter_worker_count,
                  session=requests.session()):
         self.parser_worker_count = parser_worker_count
         self.downloader_worker_count = downloader_worker_count

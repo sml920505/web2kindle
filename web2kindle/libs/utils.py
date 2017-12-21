@@ -5,6 +5,7 @@
 #         http://wax8280.github.io
 # Created on 2017/10/10 9:52
 import os
+import random
 import re
 import yaml
 import hashlib
@@ -23,10 +24,11 @@ def singleton(cls):
     @wraps(cls)
     def getinstance(*args, **kw):
         if cls not in instances:
-            instances[cls] = cls(*args, **kw)
+            the_instances = cls(*args, **kw)
+            instances[cls] = the_instances
+            return the_instances
         else:
             return instances[cls]
-        return cls(*args, **kw)
 
     return getinstance
 
@@ -112,7 +114,7 @@ def read_file_to_list(path):
 def check_config(main_config, script_config, config_name, logger):
     if config_name not in script_config:
         if config_name in main_config:
-            script_config.update({config_name:main_config.get(config_name)})
+            script_config.update({config_name: main_config.get(config_name)})
         else:
             logger.log_it("在配置文件中没有发现'{}'项，请确认主配置文件中或脚本配置文件中存在该项。".format(config_name), 'ERROR')
             os._exit(0)
@@ -120,3 +122,6 @@ def check_config(main_config, script_config, config_name, logger):
 
 def split_list(the_list, window):
     return [the_list[i:i + window] for i in range(0, len(the_list), window)]
+
+def random_char(c):
+    return [chr(random.choice(list(set(range(65, 123)) - set(range(91, 97))))) for i in range(c)]

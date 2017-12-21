@@ -9,6 +9,8 @@ import os
 from functools import wraps
 from threading import current_thread
 
+DB_NAME = 'article.db'
+
 TABLE_ARTICLE_SQL = """
 CREATE TABLE ARTICLE(
   ARTICLE_ID              CHAR(32) PRIMARY KEY ,
@@ -70,7 +72,7 @@ def On_DBCreate(cls):
                 except FileExistsError:
                     pass
 
-            conn = sqlite3.connect(os.path.join(path, 'article.db'))
+            conn = sqlite3.connect(os.path.join(path, DB_NAME))
             cursor = conn.cursor()
             for table in TABLES_SQL:
                 try:
@@ -84,19 +86,20 @@ def On_DBCreate(cls):
 
             init = True
 
+        # 每一个线程公用一个实例
         thread_name = current_thread().getName()
         if cls not in instances_for_each_thread:
-            instances_for_each_thread[thread_name] = cls(*args, **kw)
+            instance = cls(*args, **kw)
+            instances_for_each_thread[thread_name] = instance
+            return instance
         else:
             return instances_for_each_thread[thread_name]
-        return cls(*args, **kw)
 
     return getinstance
 
 
 @On_DBCreate
 class ArticleDB:
-    # FIXME:sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread.The object was created in thread id 140673919473408 and this is thread id 140673911080704
     # FIXME:sqlite3.OperationalError: database is locked
     def __init__(self, script_save_path, **kwargs):
         self.script_save_path = script_save_path
@@ -105,7 +108,7 @@ class ArticleDB:
         if not os.path.exists(self.script_save_path):
             os.makedirs(self.script_save_path)
 
-        self.conn = sqlite3.connect(os.path.join(self.script_save_path, 'article.db'))
+        self.conn = sqlite3.connect(os.path.join(self.script_save_path, DB_NAME))
         self.cursor = self.conn.cursor()
         return self
 
@@ -121,22 +124,22 @@ class ArticleDB:
                 if 'table ARTICLE already exists' in str(e):
                     pass
 
-    def get_last_version(self):
+    def select_version(self):
         return int(self.select_meta('VERSION'))
 
     def increase_version(self):
-        version = self.get_last_version()
+        version = self.select_version()
         self.insert_meta_data(['VERSION', version + 1])
 
     def insert_meta_data(self, meta_data: list, update=True):
         insert_meta_data_static(self.cursor, self.conn, meta_data, update)
 
     def insert_article(self, items):
-        # FIXME:Check title unique
-        last_version = self.get_last_version()
         if not len(items):
             return
 
+        # 这次插入的VERSION比上次大
+        last_version = self.select_version()
         if not isinstance(items[0], list):
             items = [items]
         if last_version is None:
@@ -144,10 +147,8 @@ class ArticleDB:
         else:
             new_version = last_version + 1
 
-        for i in items:
-            i.append(new_version)
-
         for item in items:
+            item.append(new_version)
             try:
                 # 忽略ARTICLE_ID(由url得到的md5)重复的
                 self.cursor.execute(INSERT_ARTICLE_SQL, item)
@@ -157,21 +158,14 @@ class ArticleDB:
         self.conn.commit()
 
     def select_article(self):
-        now_version = self.get_last_version() + 1
-        return self.cursor.execute(SELECT_ARTICLE_SQL, (now_version,)).fetchall()
+        return self.cursor.execute(SELECT_ARTICLE_SQL, (self.select_version() + 1,)).fetchall()
 
     def select_meta(self, meta):
         return self.cursor.execute(SELECT_METADATA_SQL, (meta,)).fetchone()[0]
 
     def reset_version(self):
-        version = int(self.cursor.execute(SELECT_LAST_VERION_FROM_ARTICLE_SQL).fetchone()[0])
-        self.insert_meta_data(['VERSION', version - 1])
+        self.insert_meta_data(
+            ['VERSION', int(self.cursor.execute(SELECT_LAST_VERION_FROM_ARTICLE_SQL).fetchone()[0]) - 1])
 
     def select_all_article_id(self):
         return self.cursor.execute(SELECT_ALL_ARTICLE_ID_SQL).fetchall()
-
-
-if __name__ == '__main__':
-    with ArticleDB('/home/vincent/TMP') as t:
-        t.insert_meta_data(['VERSION', 1], False)
-        t.insert_article(['a', 'a', '', '', '', '', 1])

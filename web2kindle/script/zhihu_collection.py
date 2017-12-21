@@ -10,16 +10,17 @@ from copy import deepcopy
 from queue import Queue, PriorityQueue
 from urllib.parse import urlparse, unquote
 import time
+from bs4 import BeautifulSoup
+
+from web2kindle import MAIN_CONFIG
 from web2kindle.libs.crawler import Crawler, md5string, RetryDownload, Task
 from web2kindle.libs.db import ArticleDB
 from web2kindle.libs.utils import write, load_config, check_config
 from web2kindle.libs.html2kindle import HTML2Kindle
 from web2kindle.libs.log import Log
 from web2kindle.libs.send_email import SendEmail2Kindle
-from bs4 import BeautifulSoup
 
 SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_collection_config.yml')
-MAIN_CONFIG = load_config('./web2kindle/config/config.yml')
 GET_BOOK_NAME_FLAG = False
 LOG = Log('zhihu_collection')
 DEFAULT_HEADERS = {
@@ -34,7 +35,8 @@ def main(collection_num_list, start, end, kw):
     iq = PriorityQueue()
     oq = PriorityQueue()
     result_q = Queue()
-    crawler = Crawler(iq, oq, result_q)
+    crawler = Crawler(iq, oq, result_q, MAIN_CONFIG.get('PARSER_WORKER', 1), MAIN_CONFIG.get('DOWNLOADER_WORKER', 1),
+                      MAIN_CONFIG.get('RESULTER_WORKER', 1))
     new = True
 
     for collection_num in collection_num_list:

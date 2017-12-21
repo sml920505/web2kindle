@@ -11,17 +11,17 @@ import time
 from copy import deepcopy
 from queue import Queue, PriorityQueue
 from urllib.parse import urlparse, unquote
+from bs4 import BeautifulSoup
 
+from web2kindle import MAIN_CONFIG
 from web2kindle.libs.crawler import Crawler, RetryDownload, Task
 from web2kindle.libs.db import ArticleDB
 from web2kindle.libs.html2kindle import HTML2Kindle
 from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, load_config, md5string, check_config
 from web2kindle.libs.log import Log
-from bs4 import BeautifulSoup
 
 SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_answers_config.yml')
-MAIN_CONFIG = load_config('./web2kindle/config/config.yml')
 LOG = Log("zhihu_answers")
 API_URL = "https://www.zhihu.com/api/v4/members/{}/answers?include=data%5B*%5D.is_normal%2Cadmin_closed_comment%2" \
           "Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Ccollapsed_by%2" \
@@ -46,7 +46,8 @@ def main(zhihu_answers_list, start, end, kw):
     iq = PriorityQueue()
     oq = PriorityQueue()
     result_q = Queue()
-    crawler = Crawler(iq, oq, result_q)
+    crawler = Crawler(iq, oq, result_q, MAIN_CONFIG.get('PARSER_WORKER', 1), MAIN_CONFIG.get('DOWNLOADER_WORKER', 1),
+                      MAIN_CONFIG.get('RESULTER_WORKER', 1))
     new = True
 
     for zhihu_answers in zhihu_answers_list:

@@ -7,20 +7,21 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+
+from web2kindle import MAIN_CONFIG
 from web2kindle.libs.log import Log
-from web2kindle.libs.utils import load_config, singleton, find_file
+from web2kindle.libs.utils import singleton, find_file
 
 
 class SendEmail:
     def __init__(self):
-        self.CONFIG = load_config('./web2kindle/config/config.yml')
         self.log = Log('SendEmail2Kindle')
 
         try:
-            self.username = self.CONFIG['EMAIL_USERNAME']
-            self.password = self.CONFIG['PASSWORD']
-            self.smtp_addr = self.CONFIG['SMTP_ADDR']
-            self.kindle_addr = self.CONFIG['KINDLE_ADDR']
+            self.username = MAIN_CONFIG['EMAIL_USERNAME']
+            self.password = MAIN_CONFIG['PASSWORD']
+            self.smtp_addr = MAIN_CONFIG['SMTP_ADDR']
+            self.kindle_addr = MAIN_CONFIG['KINDLE_ADDR']
         except KeyError:
             self.log.log_it("无法实例化SendEmail2Kindle，请确保config.yml配置完整", 'ERROR')
             import os

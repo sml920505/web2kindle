@@ -13,17 +13,17 @@ import time
 from copy import deepcopy
 from queue import Queue, PriorityQueue
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
+from web2kindle import MAIN_CONFIG
 from web2kindle.libs.crawler import Crawler, RetryDownload, Task
 from web2kindle.libs.db import ArticleDB
 from web2kindle.libs.html2kindle import HTML2Kindle
 from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, format_file_name, load_config, check_config, md5string
 from web2kindle.libs.log import Log
-from bs4 import BeautifulSoup
 
 SCRIPT_CONFIG = load_config('./web2kindle/config/qdaily_config.yml')
-MAIN_CONFIG = load_config('./web2kindle/config/config.yml')
 LOG = Log("qdaily_home")
 API_URL = 'https://www.qdaily.com/homes/articlemore/{}.json'
 DEFAULT_HEADERS = {
@@ -39,6 +39,7 @@ API_ENTERTAINMENT = 'https://www.qdaily.com/categories/categorymore/3/{}.json'
 API_CITY = 'https://www.qdaily.com/categories/categorymore/5/{}.json'
 API_GAME = 'https://www.qdaily.com/categories/categorymore/54/{}.json'
 API_LONG = 'https://www.qdaily.com/tags/tagmore/1068/{}.json'
+ARTICLE_ID_SET = set()
 
 
 def main(start, end, kw):
@@ -47,7 +48,10 @@ def main(start, end, kw):
     iq = PriorityQueue()
     oq = PriorityQueue()
     result_q = Queue()
-    crawler = Crawler(iq, oq, result_q)
+    crawler = Crawler(iq, oq, result_q, MAIN_CONFIG.get('PARSER_WORKER', 1), MAIN_CONFIG.get('DOWNLOADER_WORKER', 1),
+                      MAIN_CONFIG.get('RESULTER_WORKER', 1))
+    new = True
+
     try:
         start_l = [int(_) for _ in start.split('-')]
         end_l = [int(_) for _ in end.split('-')]
@@ -103,7 +107,10 @@ def main(start, end, kw):
     iq.put(task)
     # Init DB
     with ArticleDB(save_path, VERSION=0) as db:
-        pass
+        _ = db.select_all_article_id()
+    if _:
+        for each in _:
+            ARTICLE_ID_SET.add(each[0])
 
     crawler.start()
 
@@ -113,11 +120,16 @@ def main(start, end, kw):
         db.insert_meta_data(['BOOK_NAME', book_name])
         db.increase_version()
 
-    with HTML2Kindle(items, save_path, book_name, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
-        html2kindle.make_metadata(window=kw.get('window', 50))
-        html2kindle.make_book_multi(save_path)
+    if items:
+        new = True
+        with HTML2Kindle(items, save_path, book_name, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
+            html2kindle.make_metadata(window=kw.get('window', 50))
+            html2kindle.make_book_multi(save_path)
+    else:
+        LOG.log_it('无新项目', 'INFO')
+        new = False
 
-    if kw.get('email'):
+    if new and kw.get('email'):
         with SendEmail2Kindle() as s:
             s.send_all_mobi(save_path)
     os._exit(0)
@@ -127,6 +139,7 @@ def parser_list(task):
     response = task['response']
     new_tasks = []
     opf = []
+    to_next = True
 
     if not response:
         raise RetryDownload
@@ -139,8 +152,37 @@ def parser_list(task):
         raise RetryDownload
 
     try:
+        for item in data['data']['feeds']:
+            if item['datatype'] == 'article':
+                article_url = 'https://www.qdaily.com/articles/{}.html'.format(str(item['id']))
+                article_id = md5string(article_url)
+                # 如果在数据库里面已经存在的项目，就不继续爬了
+                if article_id not in ARTICLE_ID_SET:
+                    item = item['post']
+                    # 文件名太长无法制作mobi
+                    title = item['title']
+                    if len(title) > 55:
+                        _ = 55 - len(title) - 3
+                        title = title[:_] + '...'
+                    opf.append({'href': format_file_name(title, '.html')})
+                    new_task = Task.make_task({
+                        'url': article_url,
+                        'method': 'GET',
+                        'meta': task['meta'],
+                        'parser': parser_content,
+                        'resulter': resulter_content,
+                        'priority': 5,
+                        'save': task['save'],
+                        'title': item['title'],
+                        'created_time': item['publish_time'],
+                        'voteup_count': item['praise_count']
+                    })
+                    new_tasks.append(new_task)
+                else:
+                    to_next = False
+
         # Next page
-        if len(data['data']) != 0:
+        if to_next and len(data['data']) != 0:
             if data['data']['last_key'] > task['save']['end'] - 144209:
                 next_page_task = deepcopy(task)
                 next_page_task.update(
@@ -151,28 +193,6 @@ def parser_list(task):
             LOG.log_it('不能读取专栏列表。（如一直出现，而且浏览器能正常访问，可能是代码升级，请通知开发者。）', 'WARN')
             raise RetryDownload
 
-        for item in data['data']['feeds']:
-            if item['datatype'] == 'article':
-                item = item['post']
-                # 文件名太长无法制作mobi
-                title = item['title']
-                if len(title) > 55:
-                    _ = 55 - len(title) - 3
-                    title = title[:_] + '...'
-                opf.append({'href': format_file_name(title, '.html')})
-                new_task = Task.make_task({
-                    'url': 'https://www.qdaily.com/articles/{}.html'.format(str(item['id'])),
-                    'method': 'GET',
-                    'meta': task['meta'],
-                    'parser': parser_content,
-                    'resulter': resulter_content,
-                    'priority': 5,
-                    'save': task['save'],
-                    'title': item['title'],
-                    'created_time': item['publish_time'],
-                    'voteup_count': item['praise_count']
-                })
-                new_tasks.append(new_task)
     except KeyError:
         LOG.log_it('JSON KEY出错（如一直出现，而且浏览器能正常访问，可能是网站代码升级，请通知开发者。）', 'WARN')
         raise RetryDownload
@@ -202,11 +222,11 @@ def parser_content(task):
     voteup_count = task['voteup_count']
     created_time = task['created_time']
     article_url = task['url']
+    article_id = md5string(article_url)
 
     download_img_list, content = format_content(content, task)
 
-    items.append([md5string(article_url), title, content, created_time, voteup_count, author_name,
-                  int(time.time() * 100000)])
+    items.append([article_id, title, content, created_time, voteup_count, author_name, int(time.time() * 100000)])
 
     if task['save']['kw'].get('img', True):
         img_header = deepcopy(SCRIPT_CONFIG.get('DEFAULT_HEADERS'))
