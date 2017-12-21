@@ -137,7 +137,7 @@ def parser_list(task):
         raise RetryDownload
 
     # 获取下一页
-    if to_next and task['save'] < task['save'] and not len(data['result']) < 20:
+    if to_next and task['save']['cursor'] < task['save']['end'] and not len(data['result']) < 20:
         meta = deepcopy(task['meta'])
         save = deepcopy(task['save'])
         save['cursor'] += 20
