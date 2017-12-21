@@ -85,7 +85,7 @@ def main(start, end, kw):
     else:
         kw.update({'type': 'home'})
 
-    new_header = deepcopy(SCRIPT_CONFIG.get('DEFAULT_HEADERS'))
+    new_header = deepcopy(DEFAULT_HEADERS)
     new_header.update({'Referer': 'https://www.qdaily.com/'})
     save_path = os.path.join(SCRIPT_CONFIG['SAVE_PATH'], 'qdaily_{}'.format(kw['type']))
     book_name = '好奇心日报_{}_{}_{}'.format(kw['type'], start, end)
@@ -229,7 +229,7 @@ def parser_content(task):
     items.append([article_id, title, content, created_time, voteup_count, author_name, int(time.time() * 100000)])
 
     if task['save']['kw'].get('img', True):
-        img_header = deepcopy(SCRIPT_CONFIG.get('DEFAULT_HEADERS'))
+        img_header = deepcopy(DEFAULT_HEADERS)
         img_header.update({'Referer': response.url})
         for img_url in download_img_list:
             new_tasks.append(Task.make_task({
