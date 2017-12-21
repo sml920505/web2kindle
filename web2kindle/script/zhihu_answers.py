@@ -282,8 +282,11 @@ def convert_link(x):
 
 def format_zhihu_content(content: str, task):
     download_img_list = []
-    # 去除空格
-    content = content.replace('</p><p>', '').replace('<br/>', '')
+    # 换行格式化
+    content = content.replace('</p><br/><p>', '<br/>').replace('</p><p>', '<br/>')
+    content = re.sub('(<br>)+', '<br/>', content)
+    content = re.sub('(<br/>)+', '<br/>', content)
+
     bs2 = BeautifulSoup(content, 'lxml')
     for tab in bs2.select('img[src^="data"]'):
         # 删除无用的img标签

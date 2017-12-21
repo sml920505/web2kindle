@@ -50,7 +50,6 @@ def main(start, end, kw):
     result_q = Queue()
     crawler = Crawler(iq, oq, result_q, MAIN_CONFIG.get('PARSER_WORKER', 1), MAIN_CONFIG.get('DOWNLOADER_WORKER', 1),
                       MAIN_CONFIG.get('RESULTER_WORKER', 1))
-    new = True
 
     try:
         start_l = [int(_) for _ in start.split('-')]
@@ -289,8 +288,11 @@ def convert_img_link_to_kindle(x):
 
 
 def format_content(content, task):
-    # 去除空格
-    content = content.replace('</p><p>', '').replace('<br/>', '')
+    # 换行格式化
+    content = content.replace('</p><br/><p>', '<br/>').replace('</p><p>', '<br/>')
+    content = re.sub('(<br>)+', '<br/>', content)
+    content = re.sub('(<br/>)+', '<br/>', content)
+
     bs = BeautifulSoup(content, 'lxml')
     # 居中图片
     for tab in bs.select('img'):

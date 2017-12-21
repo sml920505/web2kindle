@@ -37,7 +37,6 @@ def main(start, end, kw):
     result_q = Queue()
     crawler = Crawler(iq, oq, result_q, MAIN_CONFIG.get('PARSER_WORKER', 1), MAIN_CONFIG.get('DOWNLOADER_WORKER', 1),
                       MAIN_CONFIG.get('RESULTER_WORKER', 1))
-    new = True
 
     default_headers = deepcopy(DEFAULT_HEADERS)
     default_headers.update({'Referer': 'http://www.guokr.com/scientific/'})

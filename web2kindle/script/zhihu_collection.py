@@ -229,8 +229,11 @@ def convert_link(x):
 def format_zhihu_content(content, task):
     """去除空行-删除无用img标签-img居中-清除gif-移除html和body标签-获取静态资源下载地址-将静态资源的地址转换为本地路径-超链接的转换-noscript标签移除"""
     download_img_list = []
-    # 去除空格
-    content = content.replace('</p><p>', '').replace('<br/>', '')
+    # 换行格式化
+    content = content.replace('</p><br/><p>', '<br/>').replace('</p><p>', '<br/>')
+    content = re.sub('(<br>)+', '<br/>', content)
+    content = re.sub('(<br/>)+', '<br/>', content)
+
     bs2 = BeautifulSoup(content, 'lxml')
     for tab in bs2.select('img[src^="data"]'):
         # 删除无用的img标签

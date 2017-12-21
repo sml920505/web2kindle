@@ -79,6 +79,7 @@ class SendEmail:
         for file_path in file_paths:
             self.log.log_it("正在发送：{}".format(file_path), 'INFO')
             self.send_file(file_path)
+            self.log.log_it("{}发送成功".format(file_path), 'INFO')
 
 
 @singleton
