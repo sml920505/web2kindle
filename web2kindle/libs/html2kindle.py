@@ -39,8 +39,7 @@ class HTML2Kindle:
             os.makedirs(path)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-        # self.remove()
+        self.remove()
 
     def __enter__(self):
         return self
