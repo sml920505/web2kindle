@@ -485,4 +485,5 @@ SAVE_PATH : 'C:\Users\web2kinle_save'
 * 支持邮箱推送功能
 * 新增了更人性化的目录
 * 取消`fix_mobi`脚本
+* 换行排版改进
 
