@@ -20,7 +20,7 @@ from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, md5string, load_config, check_config
 from web2kindle.libs.log import Log
 
-SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_zhuanlan_config.yml')
+SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_zhuanlan.yml')
 LOG = Log("zhihu_zhuanlan")
 DEFAULT_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'
@@ -76,6 +76,7 @@ def main(zhuanlan_name_list, start, end, kw):
             db.insert_meta_data(['BOOK_NAME', zhuanlan_name])
             items.extend(db.select_article())
             db.increase_version()
+            db.reset()
 
         if items:
             new = True
@@ -90,8 +91,6 @@ def main(zhuanlan_name_list, start, end, kw):
         for zhuanlan_name in zhuanlan_name_list:
             with SendEmail2Kindle() as s:
                 s.send_all_mobi(os.path.join(SCRIPT_CONFIG['SAVE_PATH'], str(zhuanlan_name)))
-
-    os._exit(0)
 
 
 def parser_list(task):

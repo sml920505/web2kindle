@@ -8,6 +8,7 @@ import os
 import re
 from copy import deepcopy
 from queue import Queue, PriorityQueue
+from threading import current_thread, active_count
 from urllib.parse import urlparse, unquote
 import time
 from bs4 import BeautifulSoup
@@ -20,7 +21,7 @@ from web2kindle.libs.html2kindle import HTML2Kindle
 from web2kindle.libs.log import Log
 from web2kindle.libs.send_email import SendEmail2Kindle
 
-SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_collection_config.yml')
+SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_collection.yml')
 GET_BOOK_NAME_FLAG = False
 LOG = Log('zhihu_collection')
 DEFAULT_HEADERS = {
@@ -72,6 +73,7 @@ def main(collection_num_list, start, end, kw):
             items.extend(db.select_article())
             book_name = db.select_meta('BOOK_NAME')
             db.increase_version()
+            db.reset()
 
         if items:
             new = True
@@ -87,8 +89,6 @@ def main(collection_num_list, start, end, kw):
             save_path = os.path.join(SCRIPT_CONFIG['SAVE_PATH'], str(collection_num))
             with SendEmail2Kindle() as s:
                 s.send_all_mobi(save_path)
-
-    os._exit(0)
 
 
 def parser_collection(task):

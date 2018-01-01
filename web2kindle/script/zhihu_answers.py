@@ -21,7 +21,7 @@ from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, load_config, md5string, check_config
 from web2kindle.libs.log import Log
 
-SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_answers_config.yml')
+SCRIPT_CONFIG = load_config('./web2kindle/config/zhihu_answers.yml')
 LOG = Log("zhihu_answers")
 API_URL = "https://www.zhihu.com/api/v4/members/{}/answers?include=data%5B*%5D.is_normal%2Cadmin_closed_comment%2" \
           "Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Ccollapsed_by%2" \
@@ -89,6 +89,7 @@ def main(zhihu_answers_list, start, end, kw):
             items.extend(db.select_article())
             db.insert_meta_data(['BOOK_NAME', zhihu_answers])
             db.increase_version()
+            db.reset()
 
         if items:
             new = True
@@ -103,7 +104,6 @@ def main(zhihu_answers_list, start, end, kw):
         for zhihu_answers in zhihu_answers_list:
             with SendEmail2Kindle() as s:
                 s.send_all_mobi(os.path.join(SCRIPT_CONFIG['SAVE_PATH'], str(zhihu_answers)))
-    os._exit(0)
 
 
 def get_main_js(task):

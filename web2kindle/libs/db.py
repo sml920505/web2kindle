@@ -6,7 +6,6 @@
 # Created on 17-12-13 下午9:56
 import sqlite3
 import os
-from functools import wraps
 from threading import current_thread
 
 DB_NAME = 'article.db'
@@ -42,37 +41,32 @@ SELECT_METADATA_SQL = "SELECT DATA FROM META WHERE META = ?"
 SELECT_ALL_ARTICLE_ID_SQL = "SELECT ARTICLE_ID FROM ARTICLE"
 
 
-def insert_meta_data_static(cursor, conn, meta_data: list, update=True):
-    try:
-        cursor.execute(INSERT_META_DATA_SQL, meta_data)
-    except sqlite3.IntegrityError as e:
-        if "UNIQUE constraint failed" in str(e) and update:
-            meta_data.reverse()
-            cursor.execute(UPDATE_META_DATA_SQL, meta_data)
-    finally:
-        conn.commit()
+class ArticleDB:
+    # FIXME:sqlite3.OperationalError: database is locked
+    INSTANCES_FOR_THREAD = {}
+    DB_INIT = False
 
+    def __new__(cls, *args, **kwargs):
+        # 每一个线程公用一个实例
+        thread_name = current_thread().getName()
+        if thread_name not in cls.INSTANCES_FOR_THREAD:
+            instance = super(ArticleDB, cls).__new__(cls)
+            cls.INSTANCES_FOR_THREAD[thread_name] = instance
+            return instance
+        else:
+            return cls.INSTANCES_FOR_THREAD[thread_name]
 
-def On_DBCreate(cls):
-    init = False
-    instances_for_each_thread = {}
+    def __init__(self, script_save_path, **kwargs):
+        self.script_save_path = script_save_path
 
-    @wraps(cls)
-    def getinstance(*args, **kw):
-        nonlocal init
-        if not init:
-            if 'script_save_path' in kw:
-                path = kw['script_save_path']
-            else:
-                path = args[0]
-
-            if not os.path.exists(path):
+        if not ArticleDB.DB_INIT:
+            if not os.path.exists(script_save_path):
                 try:
-                    os.makedirs(path)
+                    os.makedirs(script_save_path)
                 except FileExistsError:
                     pass
 
-            conn = sqlite3.connect(os.path.join(path, DB_NAME))
+            conn = sqlite3.connect(os.path.join(script_save_path, DB_NAME))
             cursor = conn.cursor()
             for table in TABLES_SQL:
                 try:
@@ -81,39 +75,23 @@ def On_DBCreate(cls):
                 except sqlite3.OperationalError as e:
                     if 'table ARTICLE already exists' in str(e):
                         pass
-            for k, v in kw.items():
-                insert_meta_data_static(cursor, conn, [k, v], update=False)
-
-            init = True
-
-        # 每一个线程公用一个实例
-        thread_name = current_thread().getName()
-        if cls not in instances_for_each_thread:
-            instance = cls(*args, **kw)
-            instances_for_each_thread[thread_name] = instance
-            return instance
-        else:
-            return instances_for_each_thread[thread_name]
-
-    return getinstance
-
-
-@On_DBCreate
-class ArticleDB:
-    # FIXME:sqlite3.OperationalError: database is locked
-    def __init__(self, script_save_path, **kwargs):
-        self.script_save_path = script_save_path
-
-    def __enter__(self):
-        if not os.path.exists(self.script_save_path):
-            os.makedirs(self.script_save_path)
+            ArticleDB.DB_INIT = True
 
         self.conn = sqlite3.connect(os.path.join(self.script_save_path, DB_NAME))
         self.cursor = self.conn.cursor()
+
+        for k, v in kwargs.items():
+            self.insert_meta_data([k, v], update=False)
+
+    def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.conn.close()
+
+    def reset(self):
+        ArticleDB.DB_INIT = False
+        ArticleDB.INSTANCES_FOR_THREAD.clear()
 
     def create_table(self):
         for table in TABLES_SQL:
@@ -132,7 +110,14 @@ class ArticleDB:
         self.insert_meta_data(['VERSION', version + 1])
 
     def insert_meta_data(self, meta_data: list, update=True):
-        insert_meta_data_static(self.cursor, self.conn, meta_data, update)
+        try:
+            self.cursor.execute(INSERT_META_DATA_SQL, meta_data)
+        except sqlite3.IntegrityError as e:
+            if "UNIQUE constraint failed" in str(e) and update:
+                meta_data.reverse()
+                self.cursor.execute(UPDATE_META_DATA_SQL, meta_data)
+        finally:
+            self.conn.commit()
 
     def insert_article(self, items):
         if not len(items):

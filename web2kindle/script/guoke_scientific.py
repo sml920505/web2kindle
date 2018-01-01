@@ -20,7 +20,7 @@ from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, load_config, check_config, md5string
 from web2kindle.libs.log import Log
 
-SCRIPT_CONFIG = load_config('./web2kindle/config/guoke_scientific_config.yml')
+SCRIPT_CONFIG = load_config('./web2kindle/config/guoke_scientific.yml')
 LOG = Log("guoke_scientific")
 API_URL = "http://www.guokr.com/apis/minisite/article.json?retrieve_type=by_subject&limit=20&offset={}&_=1508757235776"
 DEFAULT_HEADERS = {
@@ -72,6 +72,7 @@ def main(start, end, kw):
         items.extend(db.select_article())
         db.insert_meta_data(['BOOK_NAME', book_name])
         db.increase_version()
+        db.reset()
 
     if items:
         new = True
@@ -85,7 +86,6 @@ def main(start, end, kw):
     if new and kw.get('email'):
         with SendEmail2Kindle() as s:
             s.send_all_mobi(SCRIPT_CONFIG['SAVE_PATH'])
-    os._exit(0)
 
 
 def parser_list(task):

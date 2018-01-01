@@ -23,7 +23,7 @@ from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, format_file_name, load_config, check_config, md5string
 from web2kindle.libs.log import Log
 
-SCRIPT_CONFIG = load_config('./web2kindle/config/qdaily_config.yml')
+SCRIPT_CONFIG = load_config('./web2kindle/config/qdaily.yml')
 LOG = Log("qdaily_home")
 API_URL = 'https://www.qdaily.com/homes/articlemore/{}.json'
 DEFAULT_HEADERS = {
@@ -118,6 +118,7 @@ def main(start, end, kw):
         items.extend(db.select_article())
         db.insert_meta_data(['BOOK_NAME', book_name])
         db.increase_version()
+        db.reset()
 
     if items:
         new = True
@@ -131,7 +132,6 @@ def main(start, end, kw):
     if new and kw.get('email'):
         with SendEmail2Kindle() as s:
             s.send_all_mobi(save_path)
-    os._exit(0)
 
 
 def parser_list(task):
@@ -186,7 +186,8 @@ def parser_list(task):
                     next_page_task = deepcopy(task)
                     next_page_task.update(
                         {'url': API_URL.format(data['data']['last_key'])})
-                    next_page_task['save'].update({'cursor': data['data']['last_key'], 'page': task['save']['page'] + 1})
+                    next_page_task['save'].update(
+                        {'cursor': data['data']['last_key'], 'page': task['save']['page'] + 1})
                     new_tasks.append(next_page_task)
             else:
                 LOG.log_it('不能读取列表。（如一直出现，而且浏览器能正常访问，可能是代码升级，请通知开发者。）', 'WARN')
@@ -306,7 +307,6 @@ def format_content(content, task):
         if task['save']['kw']['gif'] is False:
             if 'gif' in tab['data-src']:
                 tab.decompose()
-
 
     content = str(bs)
     # bs4会自动加html和body 标签
