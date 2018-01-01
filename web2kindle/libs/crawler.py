@@ -247,7 +247,13 @@ class Parser(Thread):
 
         with COND:
             COND.notify_all()
-        task = self.downloader_parser_q.get()
+        try:
+            task = self.downloader_parser_q.get_nowait()
+        except:
+            time.sleep(1)
+            with COND:
+                COND.notify_all()
+            return
 
         try:
             task_with_parsed_data, tasks = task['parser'](task)
@@ -431,4 +437,7 @@ class Crawler:
                     time.sleep(1)
                     for worker in self.resulter_worker:
                         resulter_not_alive &= not worker.is_alive()
+
+                for worker in self.resulter_worker:
+                    worker.exit()
                 return
