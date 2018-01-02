@@ -36,12 +36,24 @@ def singleton(cls):
 def load_config(path):
     try:
         try:
-            f = open(path, 'r', encoding='utf-8')
+            with open(path, 'r', encoding='utf-8') as f:
+                return yaml.load(f)
         except UnicodeDecodeError:
-            f = open(path, 'r')
+            with open(path, 'r') as f:
+                return yaml.load(f)
     except FileNotFoundError:
         return {}
-    return yaml.load(f)
+
+
+def write_config(path, d):
+    # path所在的目录
+    if not os.path.exists(os.path.split(path)[0]):
+        os.makedirs((os.path.split(path)[0]))
+
+    dump_string = yaml.dump(d)
+    print(dump_string)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(dump_string)
 
 
 def get_system():
@@ -122,6 +134,7 @@ def check_config(main_config, script_config, config_name, logger):
 
 def split_list(the_list, window):
     return [the_list[i:i + window] for i in range(0, len(the_list), window)]
+
 
 def random_char(c):
     return [chr(random.choice(list(set(range(65, 123)) - set(range(91, 97))))) for i in range(c)]
