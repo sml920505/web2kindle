@@ -51,7 +51,6 @@ def write_config(path, d):
         os.makedirs((os.path.split(path)[0]))
 
     dump_string = yaml.dump(d)
-    print(dump_string)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(dump_string)
 

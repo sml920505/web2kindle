@@ -187,7 +187,7 @@ python main.py zhihu_collection --i=191640375 --email
 SAVE_PATH : 'C:\Users\web2kinle_save'
 ```
 
-- SVAE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
+- SAVE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
 # 脚本
 
@@ -263,13 +263,13 @@ python main.py zhihu_collection --f="c:\a.txt"
 
 #### 配置
 
-在`config`目录下新建一个`zhihu_collection_config.yml`文件。
+在`config`目录下新建一个`zhihu_collection.yml`文件。
 
 ```
 SAVE_PATH : 'C:\Users\web2kinle_save'
 ```
 
-- SVAE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
+- SAVE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
 ### zhihu_zhuanlan
 
@@ -304,13 +304,13 @@ alenxwn
 
 #### 配置
 
-在`config`目录下新建一个`zhihu_zhuanlan_config.yml`文件。
+在`config`目录下新建一个`zhihu_zhuanlan.yml`文件。
 
 ```
 SAVE_PATH : 'C:\Users\web2kinle_save'
 ```
 
-- SVAE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
+- SAVE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
 ### zhihu_answers
 
@@ -346,13 +346,13 @@ chen-zi-long-50-58
 
 #### 配置
 
-在`config`目录下新建一个`zhihu_answers_config.yml`文件。
+在`config`目录下新建一个`zhihu_answers.yml`文件。
 
 ```
 SAVE_PATH : 'C:\Users\web2kinle_save'
 ```
 
-- SVAE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
+- SAVE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
 ## 果壳
 ### guoke_scientific
@@ -373,13 +373,13 @@ python main.py guoke_scientific
 
 #### 配置
 
-在`config`目录下新建一个`guoke_scientific_config.yml`文件。
+在`config`目录下新建一个`guoke_scientific.yml`文件。
 
 ```
 SAVE_PATH : 'C:\Users\web2kinle_save'
 ```
 
-- SVAE_PATH：保存路径名。
+- SAVE_PATH：保存路径名。
 
 
 ## 好奇心日报
@@ -400,7 +400,7 @@ python main.py qdaily
 - --end：结束篇数，如`--start=2017-12-12`。默认今天。因为是倒叙获取，`start`参数的日期必须大于或等于`end`参数的日期。
 - --no-img：不下载图片。
 - --gif：下载gif
-- --type：制定类型，默认为`home`
+- --i：制定类型，默认为`home`
   - home：首页
   - business：商业
   - intelligent：智能
@@ -414,13 +414,13 @@ python main.py qdaily
 
 #### 配置
 
-在`config`目录下新建一个`qdaily_config.yml`文件。
+在`config`目录下新建一个`qdaily.yml`文件。
 
 ```
 SAVE_PATH : 'C:\Users\web2kinle_save'
 ```
 
-- SVAE_PATH：保存路径名。
+- SAVE_PATH：保存路径名。
 
 # TODO
 
