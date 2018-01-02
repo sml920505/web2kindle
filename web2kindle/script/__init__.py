@@ -120,3 +120,176 @@ def send_mobi(path):
     from web2kindle.libs.send_email import SendEmail2Kindle
     with SendEmail2Kindle() as s:
         s.send_all_mobi(path)
+
+
+SCRIPTS = [{'script_name': 'zhihu_collection',
+            'script_introduction': '获取知乎收藏夹',
+            'i': (True, '收藏夹编号'),
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
+           {'script_name': 'zhihu_answers',
+            'script_introduction': '获取知乎答主',
+            'i': (True, '答主名称'),
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
+           {'script_name': 'zhihu_zhuanlan',
+            'script_introduction': '获取知乎专栏',
+            'i': (True, '专栏名称'),
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
+           {'script_name': 'guoke_scientific',
+            'script_introduction': '获取果壳网科学人',
+            'i': False,
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
+           {'script_name': 'qdaily',
+            'script_introduction': '获取好奇心日报',
+            'i': (True, '获取类型'),
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
+           ]
+
+SCRIPT_FUNC = {
+    'zhihu_collection': zhihu_collection_main,
+    'zhihu_zhuanlan': zhihu_zhuanlan_main,
+    'zhihu_answers': zhihu_answers_main,
+    'guoke_scientific': guoke_scientific_main,
+    'qdaily': qdaily_main,
+}
+
+SCRIPT_CONFIGS = [
+    {
+        'script_name': 'config',
+        'configs': [
+            {
+                'config_name': 'KINDLEGEN_PATH',
+                'config_introduction': "KindleGen.exe程序所在路径",
+                'requried': False,
+                'default': '',
+            },
+            {
+                'config_name': 'SAVE_PATH',
+                'config_introduction': "全局保存路径。优先使用各个脚本独立的SAVE_PATH",
+                'requried': False,
+                'default': '',
+            },
+            {
+                'config_name': 'LOG_PATH',
+                'config_introduction': "日志文件的路径",
+                'requried': False,
+                'default': '',
+            },
+            {
+                'config_name': 'LOG_LEVEL',
+                'config_introduction': "日志等级",
+                'requried': True,
+                'default': 'INFO',
+            },
+            {
+                'config_name': 'WRITE_LOG',
+                'config_introduction': "是否写日志文件，默认否",
+                'requried': False,
+                'default': False,
+            },
+            {
+                'config_name': 'DOWNLOADER_WORKER',
+                'config_introduction': "启动Downloader的数量，数量越多下载速度越快。建议为1~3。默认为1",
+                'requried': False,
+                'default': 1,
+            },
+            {
+                'config_name': 'PARSER_WORKER',
+                'config_introduction': "启动Parser的数量。建议为1。默认为1",
+                'requried': False,
+                'default': 1,
+            },
+            {
+                'config_name': 'RESULTER_WORKER',
+                'config_introduction': "Resulter。建议为1。默认为1",
+                'requried': False,
+                'default': 1,
+            },
+            {
+                'config_name': 'EMAIL_USERNAME',
+                'config_introduction': "发送给Kindle的邮箱地址",
+                'requried': False,
+                'default': '',
+            },
+            {
+                'config_name': 'PASSWORD',
+                'config_introduction': "发送给Kindle的邮箱密码",
+                'requried': False,
+                'default': '',
+            },
+            {
+                'config_name': 'SMTP_ADDR',
+                'config_introduction': "发送给Kindle的邮箱SMTP。一般，163邮箱的为`smtp.163.com`；QQ邮箱为`smtp.qq.com`。",
+                'requried': False,
+                'default': '',
+            },
+            {
+                'config_name': 'KINDLE_ADDR',
+                'config_introduction': "Kindle接受推送的邮箱",
+                'requried': False,
+                'default': '',
+            },
+
+        ]
+    },
+    {
+        'script_name': 'zhihu_collection',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+    {
+        'script_name': 'zhihu_zhuanlan',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+    {
+        'script_name': 'zhihu_answers',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+    {
+        'script_name': 'guoke_scientific',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+    {
+        'script_name': 'qdaily',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+
+]

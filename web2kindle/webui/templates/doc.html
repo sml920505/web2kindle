@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Web2kinlde 项目文档{% endblock %}
+
+{% block head %}
+    <script type="text/javascript">
+        //iframe高度自适应
+        function SetCwinHeight() {
+            var iframeid = document.getElementById("iframepage"); //iframe id
+            if (document.getElementById) {
+                if (iframeid && !window.opera) {
+                    if (iframeid.contentDocument && iframeid.contentDocument.body.offsetHeight) {
+                        iframeid.height = iframeid.contentDocument.body.offsetHeight;
+                    }
+                    else if (iframeid.Document && iframeid.Document.body.scrollHeight) {
+                        iframeid.height = iframeid.Document.body.scrollHeight;
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock %}
+
+{% block nav %}
+    <li class=""><a href="/">主页</a></li>
+    <li class=""><a href="/config">脚本配置</a></li>
+    <li class=""><a href="/guide">使用教程</a></li>
+    <li class="active"><a href="/doc">项目文档</a></li>
+    <li class=""><a href="/about">关于</a></li>
+{% endblock %}
+
+{% block content %}
+    <iframe id="iframepage" onload="Javascript:SetCwinHeight()" align="center" width="100%"
+            src="{{ url_for('static', filename='README.html') }}" frameborder="no" border="0" marginwidth="0"
+            marginheight="0" scrolling="no"></iframe>
+{% endblock %}

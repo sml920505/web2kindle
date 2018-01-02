@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Web2kinlde 主页{% endblock %}
+{% block head %}
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var script_name = window.script_name;
+
+            $(script_name).each(function (k, v) {
+                $("#" + v).submit(function (e) {
+                    e.preventDefault();
+                    var t = $("#" + v).serializeArray();
+                    t.push({'name': 'script_name', 'value': v});
+                    $.post('/action', t, function (data, status) {
+                    });
+                });
+
+            })
+        });
+    </script>
+
+    <style type="text/css">
+        .row {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+    </style>
+{% endblock %}
+{% block nav %}
+    <li class="active"><a href="/">主页</a></li>
+    <li class=""><a href="/config">脚本配置</a></li>
+    <li class=""><a href="/guide">使用教程</a></li>
+    <li class=""><a href="/doc">项目文档</a></li>
+    <li class=""><a href="/about">关于</a></li>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2">
+                <p>脚本名字</p>
+            </div>
+            <div class="col-md-2">
+                <p>脚本功能</p>
+            </div>
+            <div class="col-md-2">
+                <p>定位元素(必填)</p>
+            </div>
+            <div class="col-md-1">
+                <p>开始范围</p>
+            </div>
+            <div class="col-md-1">
+                <p>结束范围</p>
+            </div>
+            <div class="col-md-1">
+                <p>下载图片</p>
+            </div>
+            <div class="col-md-1">
+                <p>下载gif</p>
+            </div>
+            <div class="col-md-1">
+                <p>邮箱推送</p>
+            </div>
+        </div>
+        <hr>
+
+        {% for script in scripts %}
+            <div class="row">
+                <form role="form" id="{{ script.script_name }}">
+                    <div class="col-md-2">
+                        <p>{{ script.script_name }}</p>
+                    </div>
+                    <div class="col-md-2">
+                        <p>{{ script.script_introduction }}</p>
+                    </div>
+                    <div class="col-md-2">
+                        {% if script.i %}
+                            <input type="text" required="required" class="form-control" name="i"
+                                   placeholder="{{ script.i[1] }}">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-1">
+                        {% if script.start %}
+                            <input type="text" class="form-control" name="start" placeholder="">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-1">
+                        {% if script.start %}
+                            <input type="text" class="form-control" name="end" placeholder="">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-1">
+                        {% if script.img %}
+                            <input type="checkbox" checked="checked" name="img">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-1">
+                        {% if script.gif %}
+                            <input type="checkbox" name="gif">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-1">
+                        {% if script.email %}
+                            <input type="checkbox" checked="checked" name="email">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-sm btn-success">开始</button>
+                    </div>
+                </form>
+            </div>
+
+        {% endfor %}
+    </div>
+{% endblock %}

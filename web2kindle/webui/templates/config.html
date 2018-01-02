@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Web2kinlde 脚本配置{% endblock %}
+{% block head %}
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var script_name = window.script_name;
+
+            $(script_name).each(function (k, v) {
+                $("#" + v).submit(function (e) {
+                    e.preventDefault();
+                    var t = $("#" + v).serializeArray();
+                    t.push({'name': 'script_name', 'value': v});
+                    $.post('/config', t, function (data, status) {
+                        alert(status)
+                    });
+                });
+
+            })
+        });
+    </script>
+
+    <style type="text/css">
+        .container h4 {
+            padding-top: 30px;
+        }
+    </style>
+{% endblock %}
+{% block nav %}
+    <li class=""><a href="/">主页</a></li>
+    <li class="active"><a href="/config">脚本配置</a></li>
+    <li class=""><a href="/guide">使用教程</a></li>
+    <li class=""><a href="/doc">项目文档</a></li>
+    <li class=""><a href="/about">关于</a></li>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        {% for config in configs %}
+            <h4>{{ config.script_name }}</h4>
+            <hr>
+            <form role="form" id="{{ config.script_name }}">
+                {% for each_config in config.configs %}
+                    <div class="row">
+                        <div class="col-md-1">
+                            {% if each_config.requried %}
+                                {# 必选 #}
+                                <input type="checkbox" checked="checked" onclick="return false;"
+                                       name="{{ each_config.config_name }}_check">
+                            {% else %}
+                                {% if each_config.value %}
+                                    <input type="checkbox" checked="checked" name="{{ each_config.config_name }}_check">
+                                {% else %}
+                                    <input type="checkbox" name="{{ each_config.config_name }}_check">
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2">
+                            <p>{{ each_config.config_name }}</p>
+                        </div>
+                        <div class="col-md-5">
+                            <p>{{ each_config.config_introduction }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            {% if each_config.requried %}
+                                <input type="text" class="form-control" required="required"
+                                       value="{{ each_config.value }}"
+                                       name="{{ each_config.config_name }}" placeholder="">
+                            {% else %}
+                                <input type="text" class="form-control" name="{{ each_config.config_name }}"
+                                       value="{{ each_config.value }}"
+                                       placeholder="">
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                <div class="pull-right" style="margin-top: 5px;margin-bottom: 5px">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        {% endfor %}
+    </div>
+{% endblock %}
