@@ -385,9 +385,9 @@ class Crawler:
                  downloader_worker_count,
                  resulter_worker_count,
                  session=requests.session()):
-        self.parser_worker_count = parser_worker_count
-        self.downloader_worker_count = downloader_worker_count
-        self.resulter_worker_count = resulter_worker_count
+        self.parser_worker_count = int(parser_worker_count)
+        self.downloader_worker_count = int(downloader_worker_count)
+        self.resulter_worker_count = int(resulter_worker_count)
         self.downloader_worker = []
         self.parser_worker = []
         self.resulter_worker = []
