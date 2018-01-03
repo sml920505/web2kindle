@@ -44,7 +44,7 @@ class BaseLog(object):
                 file_handler.setFormatter(formatter)
                 logger.addHandler(file_handler)
 
-            logger.setLevel(MAIN_CONFIG.get('LOG_LEVEL', 'DEBUG'))
+            logger.setLevel(MAIN_CONFIG.get('LOG_LEVEL', 'INFO'))
             BaseLog.logger_dict[logger_name] = logger
         return BaseLog.logger_dict[logger_name]
 
