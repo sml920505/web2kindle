@@ -6,6 +6,8 @@
 # Created on 2017/4/11 18:14
 import os
 from copy import deepcopy
+
+import sys
 from flask import render_template, Response, Flask, request
 
 from web2kindle import load_config
@@ -14,6 +16,12 @@ from web2kindle.script import SCRIPTS, SCRIPT_CONFIGS, SCRIPT_FUNC
 
 app = Flask(__name__)
 app.debug = True
+
+# 打包成exe，必须更改目录
+if getattr(sys, 'frozen', False):
+    template_folder = os.path.join(sys.executable, '..', 'webui', 'templates')
+    static_folder = os.path.join(sys.executable, '..', 'webui', 'static')
+    app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
 
 
 @app.route('/')
@@ -81,3 +89,4 @@ def action():
 
 if __name__ == '__main__':
     app.run()
+    input()
