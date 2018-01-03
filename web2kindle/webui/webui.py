@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # vim: set et sw=4 ts=4 sts=4 ff=unix fenc=utf8:
 # Author: Vincent<vincent8280@outlook.com>
-#         http://blog.vincentzhong.cn
-# Created on 2017/4/11 18:14
+#         http://wax8280.github.io
+# Created on 2018/1/1 12:30
 import os
 from copy import deepcopy
 
@@ -61,9 +61,9 @@ def doc_page():
     return render_template('doc.html')
 
 
-@app.route('/guide')
-def guide_page():
-    return render_template('guide.html')
+@app.route('/guide_cli')
+def guide_cli_page():
+    return render_template('guide_cli.html')
 
 
 @app.route('/action', methods=['POST'])
