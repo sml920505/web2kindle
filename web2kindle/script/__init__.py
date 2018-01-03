@@ -180,7 +180,7 @@ SCRIPT_CONFIGS = [
             {
                 'config_name': 'SAVE_PATH',
                 'config_introduction': "全局保存路径。优先使用各个脚本独立的SAVE_PATH",
-                'requried': False,
+                'requried': True,
                 'default': '',
             },
             {
@@ -192,7 +192,7 @@ SCRIPT_CONFIGS = [
             {
                 'config_name': 'LOG_LEVEL',
                 'config_introduction': "日志等级",
-                'requried': True,
+                'requried': False,
                 'default': 'INFO',
             },
             {
