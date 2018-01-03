@@ -5,3 +5,4 @@ lxml
 click
 furl
 pyyaml
+flask

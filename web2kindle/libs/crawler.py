@@ -329,10 +329,11 @@ class Resulter(Thread):
         try:
             task = self.result_q.get_nowait()
         except Empty:
-            time.sleep(1)
+            time.sleep(0.2)
             return
 
         try:
+            self.log.log_it("正在处理{}".format(task['tid']))
             task['resulter'](task)
         except RetryDownload:
             self.log.log_it("RetryDownload Exception.Task{}".format(task), 'INFO')
@@ -372,7 +373,7 @@ class Resulter(Thread):
             self.log.log_it("Resulter函数错误。错误信息：{}。Task：{}".format(str(e), task), 'WARN')
 
     def run(self):
-        while not (TaskManager.ALLDONE and self.result_q.empty()):
+        while (not TaskManager.ALLDONE) or (not self.result_q.empty()):
             self.result()
 
 
@@ -440,4 +441,5 @@ class Crawler:
 
                 for worker in self.resulter_worker:
                     worker.exit()
+                TaskManager.ALLDONE = False
                 return
