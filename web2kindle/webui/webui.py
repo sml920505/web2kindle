@@ -5,9 +5,9 @@
 #         http://wax8280.github.io
 # Created on 2018/1/1 12:30
 import os
-from copy import deepcopy
-
 import sys
+import multiprocessing
+from copy import deepcopy
 from flask import render_template, Response, Flask, request
 
 from web2kindle import load_config, MAIN_CONFIG
@@ -19,6 +19,7 @@ app.debug = False
 
 # 打包成exe，必须更改目录
 if getattr(sys, 'frozen', False):
+    multiprocessing.freeze_support()
     template_folder = os.path.join(sys.executable, '..', 'webui', 'templates')
     static_folder = os.path.join(sys.executable, '..', 'webui', 'static')
     app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
