@@ -10,8 +10,7 @@ import multiprocessing
 from copy import deepcopy
 from flask import render_template, Response, Flask, request
 
-from web2kindle import load_config, MAIN_CONFIG
-from web2kindle.libs.utils import write_config
+from web2kindle.libs.utils import write_config, load_config
 from web2kindle.script import SCRIPTS, SCRIPT_CONFIGS, SCRIPT_FUNC
 
 app = Flask(__name__)
@@ -71,6 +70,7 @@ def guide_cli_page():
 def guide_gui_page():
     return render_template('guide_gui.html')
 
+
 @app.route('/action', methods=['POST'])
 def action():
     form_data = request.form.to_dict()
@@ -93,6 +93,8 @@ def action():
 
 
 if __name__ == '__main__':
+    from web2kindle import load_config, MAIN_CONFIG
+
     print("""                                                                                                         
                       VVV         VVVVVV   VVV          VVV                     VVV    VVV               
                       VVV        VVVVVVVV  VVV          VVV                     VVV    VVV               
