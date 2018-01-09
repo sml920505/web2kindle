@@ -7,9 +7,10 @@
 import click
 import multiprocessing
 
-from web2kindle.libs.utils import read_file_to_list
-from web2kindle.script import qdaily, zhihu_collection_main, zhihu_zhuanlan_main, zhihu_answers_main, \
-    guoke_scientific_main, qdaily_main, make_mobi, send_mobi
+from web2kindle.script import zhihu_collection_main, zhihu_zhuanlan_main, zhihu_answers_main, guoke_scientific_main, \
+    qdaily_main, make_mobi, send_mobi
+
+INF = 999999999
 
 
 @click.group()
@@ -21,7 +22,7 @@ def cli():
 @click.option('--i')
 @click.option('--f')
 @click.option('--start', default=1)
-@click.option('--end', default=float('inf'))
+@click.option('--end', default=INF)
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
@@ -33,7 +34,7 @@ def zhihu_collection_main_cli(i, f, start, end, img, gif, email):
 @click.option('--i')
 @click.option('--f')
 @click.option('--start', default=1)
-@click.option('--end', default=float('inf'))
+@click.option('--end', default=INF)
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
@@ -45,7 +46,7 @@ def zhihu_zhuanlan_main_cli(i, f, start, end, img, gif, email):
 @click.option('--i')
 @click.option('--f')
 @click.option('--start', default=1)
-@click.option('--end', default=float('inf'))
+@click.option('--end', default=INF)
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
@@ -55,7 +56,7 @@ def zhihu_answers_main_cli(i, f, start, end, img, gif, email):
 
 @cli.command('guoke_scientific')
 @click.option('--start', default=0)
-@click.option('--end', default=float('inf'))
+@click.option('--end', default=INF)
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
