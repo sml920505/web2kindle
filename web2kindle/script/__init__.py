@@ -90,6 +90,44 @@ def qdaily_main(start='default', end='default', i='home', img=True, gif=False, e
     web2kindle.script.qdaily.main(start, end, kw)
 
 
+def jianshu_wenji_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, order_by=None):
+    import web2kindle.script.jianshu_wenji
+    kw = {}
+    kw.update({
+        'img': img,
+        'gif': gif,
+        'email': email,
+        'order_by': order_by
+    })
+
+    if i:
+        web2kindle.script.jianshu_wenji.main([i], int(start), int(end), kw)
+    elif f:
+        l = read_file_to_list(f)
+        if not isinstance(l, list):
+            l = [l]
+        web2kindle.script.jianshu_wenji.main(l, start, end, kw)
+
+
+def jianshu_zhuanti_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, order_by=None):
+    import web2kindle.script.jianshu_wenji
+    kw = {}
+    kw.update({
+        'img': img,
+        'gif': gif,
+        'email': email,
+        'order_by': order_by
+    })
+
+    if i:
+        web2kindle.script.jianshu_wenji.main([i], int(start), int(end), kw)
+    elif f:
+        l = read_file_to_list(f)
+        if not isinstance(l, list):
+            l = [l]
+        web2kindle.script.jianshu_wenji.main(l, start, end, kw)
+
+
 def make_mobi(path, window=50, multi=True):
     from web2kindle.libs.db import ArticleDB
     from web2kindle import MAIN_CONFIG
@@ -159,6 +197,20 @@ SCRIPTS = [{'script_name': 'zhihu_collection',
             'img': True,
             'gif': True,
             'email': True, },
+           {'script_name': 'jianshu_wenji',
+            'script_introduction': '获取简书文集',
+            'i': (True, '文集ID'),
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
+           {'script_name': 'jianshu_zhuanti',
+            'script_introduction': '获取简书专题',
+            'i': (True, '专题ID'),
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
            ]
 
 SCRIPT_FUNC = {
@@ -167,6 +219,8 @@ SCRIPT_FUNC = {
     'zhihu_answers': zhihu_answers_main,
     'guoke_scientific': guoke_scientific_main,
     'qdaily': qdaily_main,
+    'jianshu_wenji': jianshu_wenji_main,
+    'jianshu_zhuanti': jianshu_zhuanti_main,
 }
 
 SCRIPT_CONFIGS = [
@@ -286,6 +340,24 @@ SCRIPT_CONFIGS = [
     },
     {
         'script_name': 'qdaily',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+    {
+        'script_name': 'jianshu_wenji',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+    {
+        'script_name': 'jianshu_zhuanti',
         'configs': [{
             'config_name': 'SAVE_PATH',
             'config_introduction': "保存路径名",
