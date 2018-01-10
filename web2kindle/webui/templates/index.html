@@ -12,6 +12,9 @@
                     var t = $("#" + v).serializeArray();
                     t.push({'name': 'script_name', 'value': v});
                     $.post('/action', t, function (data, status) {
+                        if (data) {
+                            alert(data);
+                        }
                     });
                 });
 
@@ -45,7 +48,7 @@
 {% block content %}
     <div class="container">
         <div class="row">
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <p>脚本名字</p>
             </div>
             <div class="col-md-2">
@@ -53,6 +56,9 @@
             </div>
             <div class="col-md-2">
                 <p>定位元素(必填)</p>
+            </div>
+            <div class="col-md-1">
+                <p>参数</p>
             </div>
             <div class="col-md-1">
                 <p>开始范围</p>
@@ -75,8 +81,8 @@
         {% for script in scripts %}
             <div class="row">
                 <form role="form" id="{{ script.script_name }}">
-                    <div class="col-md-2">
-                        <p>{{ script.script_name }}</p>
+                    <div class="col-md-1">
+                        <p style="font-size: 80%;color:green">{{ script.script_name }}</p>
                     </div>
                     <div class="col-md-2">
                         <p>{{ script.script_introduction }}</p>
@@ -86,6 +92,9 @@
                             <input type="text" required="required" class="form-control" name="i"
                                    placeholder="{{ script.i[1] }}">
                         {% endif %}
+                    </div>
+                    <div class="col-md-1">
+                        <input type="text" class="form-control" name="kw">
                     </div>
                     <div class="col-md-1">
                         {% if script.start %}

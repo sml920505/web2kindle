@@ -4,11 +4,12 @@
 # Author: Vincent<vincent8280@outlook.com>
 #         http://wax8280.github.io
 # Created on 2018/1/1 12:30
+import json
 import os
 import sys
 import multiprocessing
 from copy import deepcopy
-from flask import render_template, Response, Flask, request
+from flask import render_template, Response, Flask, request, make_response
 
 from web2kindle.libs.utils import write_config, load_config
 from web2kindle.script import SCRIPTS, SCRIPT_CONFIGS, SCRIPT_FUNC
@@ -85,11 +86,20 @@ def action():
         if k == 'img' or k == 'gif' or k == 'email':
             if v is not False:
                 v = True
-        if v != '':
+        if v != '' and v != 'kw':
             kw.setdefault(k, v)
 
+    if form_data['kw']:
+        try:
+            data = json.loads(form_data['kw'])
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            return make_response("无法解析'参数'数据，请确保格式正确")
+        kw.update(data)
+
     SCRIPT_FUNC[script_name](**kw)
-    return Response()
+    return make_response()
 
 
 if __name__ == '__main__':
