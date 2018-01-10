@@ -6,8 +6,10 @@
 # Created on 2017/10/10 9:53
 from web2kindle.libs.utils import read_file_to_list
 
+INF = 999999999
 
-def zhihu_collection_main(i, f=None, start=1, end=999999, img=True, gif=False, email=False):
+
+def zhihu_collection_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False):
     import web2kindle.script.zhihu_collection
     kw = {}
     kw.update({
@@ -24,7 +26,7 @@ def zhihu_collection_main(i, f=None, start=1, end=999999, img=True, gif=False, e
         web2kindle.script.zhihu_collection.main(collection_list, start, end, kw)
 
 
-def zhihu_zhuanlan_main(i, f=None, start=1, end=999999, img=True, gif=False, email=False):
+def zhihu_zhuanlan_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False):
     import web2kindle.script.zhihu_zhuanlan
     kw = {}
     kw.update({
@@ -42,7 +44,7 @@ def zhihu_zhuanlan_main(i, f=None, start=1, end=999999, img=True, gif=False, ema
         web2kindle.script.zhihu_zhuanlan.main(zhuanlan_list, start, end, kw)
 
 
-def zhihu_answers_main(i, f=None, start=1, end=999999, img=True, gif=False, email=False):
+def zhihu_answers_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False):
     import web2kindle.script.zhihu_answers
     kw = {}
     kw.update({
@@ -60,7 +62,7 @@ def zhihu_answers_main(i, f=None, start=1, end=999999, img=True, gif=False, emai
         web2kindle.script.zhihu_answers.main(people_list, start, end, kw)
 
 
-def guoke_scientific_main(start=0, end=999999, img=True, gif=False, email=False):
+def guoke_scientific_main(start=0, end=INF, img=True, gif=False, email=False):
     import web2kindle.script.guoke_scientific
     kw = {}
     kw.update({
