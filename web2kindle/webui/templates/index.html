@@ -1,29 +1,74 @@
 {% extends "base.html" %}
 {% block title %}Web2kinlde 主页{% endblock %}
 {% block head %}
-    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for("static", filename="js/common.js") }}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             var script_name = window.script_name;
-
+            var kw = {};
+            console.log(script_name);
             $(script_name).each(function (k, v) {
                 $("#" + v).submit(function (e) {
                     e.preventDefault();
                     var t = $("#" + v).serializeArray();
-                    t.push({'name': 'script_name', 'value': v});
-                    $.post('/action', t, function (data, status) {
+                    t.push({"name": "script_name", "value": v});
+                    t.push({"name": "kw", "value": JSON.stringify(kw)});
+                    console.log(t);
+                    $.post("/action", t, function (data, status) {
                         if (data) {
                             alert(data);
                         }
                     });
                 });
+            });
 
+            $("#kw_add_btn").click(function () {
+                $("#kw_row").append('<div class="col-md-6 kw_row"><input type="text" class="form-control kw_k" placeholder=""></div>\n' +
+                    '<div class="col-md-6 kw_row"><input type="text" class="form-control kw_v" placeholder=""></div>');
+            });
+
+            $("#kw_submit_btn").click(function () {
+                var kw_k = $("#kw_row :input.kw_k");
+                var kw_v = $("#kw_row :input.kw_v");
+
+                var kw_k_arr = [];
+                var kw_v_arr = [];
+
+                kw_k.each(function () {
+                    kw_k_arr.push($(this).val());
+                });
+
+
+                kw_v.each(function () {
+                    kw_v_arr.push($(this).val());
+                });
+
+
+                for (var i = 0; i < kw_k_arr.length; i++) {
+                    var k = kw_k_arr[i];
+                    var v = kw_v_arr[i];
+                    kw[k] = v;
+                }
+            });
+
+            $("#kw_rm_all_btn").click(function () {
+                $("#kw_row").empty();
+                kw = {};
             })
         });
     </script>
 
     <style type="text/css">
         .row {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .row p {
+            margin-top: 8px;
+        }
+
+        .kw_row {
             margin-top: 5px;
             margin-bottom: 5px;
         }
@@ -94,7 +139,9 @@
                         {% endif %}
                     </div>
                     <div class="col-md-1">
-                        <input type="text" class="form-control" name="kw">
+                        <a id="kw_btn" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#myModal">
+                            设置
+                        </a>
                     </div>
                     <div class="col-md-1">
                         {% if script.start %}
@@ -128,5 +175,34 @@
             </div>
 
         {% endfor %}
+    </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">模态框（Modal）标题</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">参数</div>
+                        <div class="col-md-6">值</div>
+                    </div>
+                    </hr>
+                    <div class="row" id="kw_row">
+                        <div class="col-md-6 kw_row"><input type="text" class="form-control kw_k" placeholder=""></div>
+                        <div class="col-md-6 kw_row"><input type="text" class="form-control kw_v" placeholder=""></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" id="kw_rm_all_btn" data-dismiss="modal">删除所有配置
+                    </button>
+                    <button type="button" class="btn btn-default" id="kw_add_btn">增加行</button>
+                    <button type="button" class="btn btn-primary" id="kw_submit_btn" data-dismiss="modal">提交更改</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
     </div>
 {% endblock %}

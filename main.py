@@ -8,7 +8,7 @@ import click
 import multiprocessing
 
 from web2kindle.script import zhihu_collection_main, zhihu_zhuanlan_main, zhihu_answers_main, guoke_scientific_main, \
-    qdaily_main, make_mobi, send_mobi, jianshu_wenji_main, jianshu_zhuanti_main
+    qdaily_main, make_mobi, send_mobi, jianshu_wenji_main, jianshu_zhuanti_main, jianshu_zhuanti_u_main
 
 INF = 999999999
 
@@ -26,8 +26,9 @@ def cli():
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
-def zhihu_collection_main_cli(i, f, start, end, img, gif, email):
-    zhihu_collection_main(i, f, start, end, img, gif, email)
+@click.option('--window', default=50)
+def zhihu_collection_main_cli(i, f, start, end, img, gif, email, window):
+    zhihu_collection_main(i, f, start, end, img, gif, email, window=window)
 
 
 @cli.command('zhihu_zhuanlan')
@@ -38,8 +39,9 @@ def zhihu_collection_main_cli(i, f, start, end, img, gif, email):
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
-def zhihu_zhuanlan_main_cli(i, f, start, end, img, gif, email):
-    zhihu_zhuanlan_main(i, f, start, end, img, gif, email)
+@click.option('--window', default=50)
+def zhihu_zhuanlan_main_cli(i, f, start, end, img, gif, email, window):
+    zhihu_zhuanlan_main(i, f, start, end, img, gif, email, window=window)
 
 
 @cli.command('zhihu_answers')
@@ -50,8 +52,9 @@ def zhihu_zhuanlan_main_cli(i, f, start, end, img, gif, email):
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
-def zhihu_answers_main_cli(i, f, start, end, img, gif, email):
-    zhihu_answers_main(i, f, start, end, img, gif, email)
+@click.option('--window', default=50)
+def zhihu_answers_main_cli(i, f, start, end, img, gif, email, window):
+    zhihu_answers_main(i, f, start, end, img, gif, email, window=window)
 
 
 @cli.command('guoke_scientific')
@@ -60,8 +63,9 @@ def zhihu_answers_main_cli(i, f, start, end, img, gif, email):
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
-def guoke_scientific_main_cli(start, end, img, gif, email):
-    guoke_scientific_main(start, end, img, gif, email)
+@click.option('--window', default=50)
+def guoke_scientific_main_cli(start, end, img, gif, email, window):
+    guoke_scientific_main(start, end, img, gif, email, window=window)
 
 
 @cli.command('qdaily')
@@ -71,8 +75,9 @@ def guoke_scientific_main_cli(start, end, img, gif, email):
 @click.option('--img/--no-img', default=True)
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
-def qdaily_main_cli(start, end, type, img, gif, email):
-    qdaily_main(start, end, type, img, gif, email)
+@click.option('--window', default=50)
+def qdaily_main_cli(start, end, type, img, gif, email, window):
+    qdaily_main(start, end, type, img, gif, email, window=window)
 
 
 @cli.command('make_mobi')
@@ -98,8 +103,9 @@ def send_mobi_cli(path):
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
 @click.option('--order_by', default='')
-def jianshu_wenji_cli(i, f, start, end, img, gif, email, order_by):
-    jianshu_wenji_main(i, f, start, end, img, gif, email, order_by)
+@click.option('--window', default=50)
+def jianshu_wenji_cli(i, f, start, end, img, gif, email, order_by, window):
+    jianshu_wenji_main(i, f, start, end, img, gif, email, order_by=order_by, window=window)
 
 
 @cli.command('jianshu_zhuanti')
@@ -111,8 +117,23 @@ def jianshu_wenji_cli(i, f, start, end, img, gif, email, order_by):
 @click.option('--gif/--no-gif', default=False)
 @click.option('--email/--no-email', default=False)
 @click.option('--order_by', default='')
-def jianshu_zhuanti_cli(i, f, start, end, img, gif, email, order_by):
-    jianshu_zhuanti_main(i, f, start, end, img, gif, email, order_by)
+@click.option('--window', default=50)
+def jianshu_zhuanti_cli(i, f, start, end, img, gif, email, order_by, window):
+    jianshu_zhuanti_main(i, f, start, end, img, gif, email, order_by=order_by, window=window)
+
+
+@cli.command('jianshu_zhuanti_u')
+@click.option('--i')
+@click.option('--f')
+@click.option('--start', default=1)
+@click.option('--end', default=INF)
+@click.option('--img/--no-img', default=True)
+@click.option('--gif/--no-gif', default=False)
+@click.option('--email/--no-email', default=False)
+@click.option('--order_by', default='')
+@click.option('--window', default=50)
+def jianshu_zhuanti_u_cli(i, f, start, end, img, gif, email, order_by, window):
+    jianshu_zhuanti_u_main(i, f, start, end, img, gif, email, order_by=order_by, window=window)
 
 
 if __name__ == '__main__':

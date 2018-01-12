@@ -75,18 +75,23 @@ def guide_gui_page():
 @app.route('/action', methods=['POST'])
 def action():
     form_data = request.form.to_dict()
+    print(form_data)
     script_name = form_data['script_name']
     form_data.pop('script_name')
     form_data.setdefault('img', False)
     form_data.setdefault('gif', False)
     form_data.setdefault('email', False)
 
-    kw = {}
+    kw = {'i': form_data['i']}
     for k, v in form_data.items():
         if k == 'img' or k == 'gif' or k == 'email':
             if v is not False:
                 v = True
-        if v != '' and v != 'kw':
+            kw.setdefault(k, v)
+        elif k == 'start' or k == 'end':
+            if not k:
+                pass
+        elif k != 'kw':
             kw.setdefault(k, v)
 
     if form_data['kw']:
@@ -96,7 +101,9 @@ def action():
             import traceback
             traceback.print_exc()
             return make_response("无法解析'参数'数据，请确保格式正确")
-        kw.update(data)
+        if data:
+            for k, v in data.items():
+                kw.setdefault(k, v)
 
     SCRIPT_FUNC[script_name](**kw)
     return make_response()

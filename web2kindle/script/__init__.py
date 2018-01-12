@@ -9,9 +9,9 @@ from web2kindle.libs.utils import read_file_to_list
 INF = 999999999
 
 
-def zhihu_collection_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False):
+def zhihu_collection_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
     import web2kindle.script.zhihu_collection
-    kw = {}
+
     kw.update({
         'img': img,
         'gif': gif,
@@ -26,9 +26,9 @@ def zhihu_collection_main(i, f=None, start=1, end=INF, img=True, gif=False, emai
         web2kindle.script.zhihu_collection.main(collection_list, start, end, kw)
 
 
-def zhihu_zhuanlan_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False):
+def zhihu_zhuanlan_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
     import web2kindle.script.zhihu_zhuanlan
-    kw = {}
+
     kw.update({
         'img': img,
         'gif': gif,
@@ -44,9 +44,9 @@ def zhihu_zhuanlan_main(i, f=None, start=1, end=INF, img=True, gif=False, email=
         web2kindle.script.zhihu_zhuanlan.main(zhuanlan_list, start, end, kw)
 
 
-def zhihu_answers_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False):
+def zhihu_answers_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
     import web2kindle.script.zhihu_answers
-    kw = {}
+
     kw.update({
         'img': img,
         'gif': gif,
@@ -62,9 +62,9 @@ def zhihu_answers_main(i, f=None, start=1, end=INF, img=True, gif=False, email=F
         web2kindle.script.zhihu_answers.main(people_list, start, end, kw)
 
 
-def guoke_scientific_main(start=0, end=INF, img=True, gif=False, email=False):
+def guoke_scientific_main(start=0, end=INF, img=True, gif=False, email=False, **kw):
     import web2kindle.script.guoke_scientific
-    kw = {}
+
     kw.update({
         'img': img,
         'gif': gif,
@@ -73,9 +73,9 @@ def guoke_scientific_main(start=0, end=INF, img=True, gif=False, email=False):
     web2kindle.script.guoke_scientific.main(int(start), int(end), kw)
 
 
-def qdaily_main(start='default', end='default', i='home', img=True, gif=False, email=False):
+def qdaily_main(start='default', end='default', i='home', img=True, gif=False, email=False, **kw):
     import web2kindle.script.qdaily, datetime, time
-    kw = {}
+
     kw.update({
         'img': img,
         'gif': gif,
@@ -90,14 +90,13 @@ def qdaily_main(start='default', end='default', i='home', img=True, gif=False, e
     web2kindle.script.qdaily.main(start, end, kw)
 
 
-def jianshu_wenji_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, order_by=None):
+def jianshu_wenji_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
     import web2kindle.script.jianshu_wenji
-    kw = {}
+
     kw.update({
         'img': img,
         'gif': gif,
         'email': email,
-        'order_by': order_by
     })
 
     if i:
@@ -109,23 +108,40 @@ def jianshu_wenji_main(i, f=None, start=1, end=INF, img=True, gif=False, email=F
         web2kindle.script.jianshu_wenji.main(l, start, end, kw)
 
 
-def jianshu_zhuanti_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, order_by=None):
-    import web2kindle.script.jianshu_wenji
-    kw = {}
+def jianshu_zhuanti_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
+    import web2kindle.script.jianshu_zhuanti
+    
     kw.update({
         'img': img,
         'gif': gif,
         'email': email,
-        'order_by': order_by
     })
 
     if i:
-        web2kindle.script.jianshu_wenji.main([i], int(start), int(end), kw)
+        web2kindle.script.jianshu_zhuanti.main([i], int(start), int(end), kw)
     elif f:
         l = read_file_to_list(f)
         if not isinstance(l, list):
             l = [l]
-        web2kindle.script.jianshu_wenji.main(l, start, end, kw)
+        web2kindle.script.jianshu_zhuanti.main(l, start, end, kw)
+
+
+def jianshu_zhuanti_u_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
+    import web2kindle.script.jianshu_zhuanti_u
+
+    kw.update({
+        'img': img,
+        'gif': gif,
+        'email': email,
+    })
+
+    if i:
+        web2kindle.script.jianshu_zhuanti_u.main([i], int(start), int(end), kw)
+    elif f:
+        l = read_file_to_list(f)
+        if not isinstance(l, list):
+            l = [l]
+        web2kindle.script.jianshu_zhuanti_u.main(l, start, end, kw)
 
 
 def make_mobi(path, window=50, multi=True):
@@ -205,7 +221,14 @@ SCRIPTS = [{'script_name': 'zhihu_collection',
             'gif': True,
             'email': True, },
            {'script_name': 'jianshu_zhuanti',
-            'script_introduction': '获取简书专题',
+            'script_introduction': '获取简书专题（c版本）',
+            'i': (True, '专题ID'),
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
+           {'script_name': 'jianshu_zhuanti_u',
+            'script_introduction': '获取简书专题（u版本）',
             'i': (True, '专题ID'),
             'start': True,
             'img': True,
@@ -221,6 +244,7 @@ SCRIPT_FUNC = {
     'qdaily': qdaily_main,
     'jianshu_wenji': jianshu_wenji_main,
     'jianshu_zhuanti': jianshu_zhuanti_main,
+    'jianshu_zhuanti_u': jianshu_zhuanti_u_main,
 }
 
 SCRIPT_CONFIGS = [
@@ -358,6 +382,15 @@ SCRIPT_CONFIGS = [
     },
     {
         'script_name': 'jianshu_zhuanti',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+    {
+        'script_name': 'jianshu_zhuanti_u',
         'configs': [{
             'config_name': 'SAVE_PATH',
             'config_introduction': "保存路径名",
