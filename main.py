@@ -8,7 +8,7 @@ import click
 import multiprocessing
 
 from web2kindle.script import zhihu_collection_main, zhihu_zhuanlan_main, zhihu_answers_main, guoke_scientific_main, \
-    qdaily_main, make_mobi, send_mobi
+    qdaily_main, make_mobi, send_mobi, jianshu_wenji_main, jianshu_zhuanti_main
 
 INF = 999999999
 
@@ -87,6 +87,32 @@ def make_mobi_cli(path, window, multi):
 @click.option('--path')
 def send_mobi_cli(path):
     send_mobi(path)
+
+
+@cli.command('jianshu_wenji')
+@click.option('--i')
+@click.option('--f')
+@click.option('--start', default=1)
+@click.option('--end', default=INF)
+@click.option('--img/--no-img', default=True)
+@click.option('--gif/--no-gif', default=False)
+@click.option('--email/--no-email', default=False)
+@click.option('--order_by', default='')
+def jianshu_wenji_cli(i, f, start, end, img, gif, email, order_by):
+    jianshu_wenji_main(i, f, start, end, img, gif, email, order_by)
+
+
+@cli.command('jianshu_zhuanti')
+@click.option('--i')
+@click.option('--f')
+@click.option('--start', default=1)
+@click.option('--end', default=INF)
+@click.option('--img/--no-img', default=True)
+@click.option('--gif/--no-gif', default=False)
+@click.option('--email/--no-email', default=False)
+@click.option('--order_by', default='')
+def jianshu_zhuanti_cli(i, f, start, end, img, gif, email, order_by):
+    jianshu_zhuanti_main(i, f, start, end, img, gif, email, order_by)
 
 
 if __name__ == '__main__':
