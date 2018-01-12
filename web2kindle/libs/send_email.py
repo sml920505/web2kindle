@@ -24,8 +24,7 @@ class SendEmail:
             self.kindle_addr = MAIN_CONFIG['KINDLE_ADDR']
         except KeyError:
             self.log.log_it("无法实例化SendEmail2Kindle，请确保config.yml配置完整", 'ERROR')
-            import os
-            os._exit(1)
+            return
 
         self.sender = self.username
         self.sended = []
