@@ -371,6 +371,11 @@ class Resulter(Thread):
         except Exception as e:
             traceback.print_exc()
             self.log.log_it("Resulter函数错误。错误信息：{}。Task：{}".format(str(e), task), 'WARN')
+            if task.get('retry', None):
+                if task.get('retried', 0) < task.get('retry'):
+                    task.update({'retried': task.get('retried', 1) + 1})
+                    self.result_q.put(task)
+            return
 
     def run(self):
         while (not TaskManager.ALLDONE) or (not self.result_q.empty()):
