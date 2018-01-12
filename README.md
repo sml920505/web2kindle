@@ -213,7 +213,8 @@ python main.py make_mobi --path="F:\source"
 
 可选参数：
 
-- --single：使用单进程（默认多进程）
+- --single：使用单进程，默认多进程
+- --window：每本电子书所含最大文章数，默认50
 
 ### send_mobi
 
@@ -260,6 +261,7 @@ python main.py zhihu_collection --f="c:\a.txt"
 - --no-img：不下载图片
 - --gif：下载gif
 - --email：推送
+- --window：每本电子书所含最大文章数，默认50
 
 #### 配置
 
@@ -301,6 +303,7 @@ alenxwn
 - --no-img：不下载图片
 - --gif：下载gif
 - --email：推送
+- --window：每本电子书所含最大文章数，默认50
 
 #### 配置
 
@@ -343,6 +346,7 @@ chen-zi-long-50-58
 - --no-img：不下载图片
 - --gif：下载gif
 - --email：推送
+- --window：每本电子书所含最大文章数，默认50
 
 #### 配置
 
@@ -370,6 +374,7 @@ python main.py guoke_scientific
 - --no-img：不下载图片
 - --gif：下载gif
 - --email：推送
+- --window：每本电子书所含最大文章数，默认50
 
 #### 配置
 
@@ -411,6 +416,38 @@ python main.py qdaily
   - game：游戏
   - long：长文章
 - --email：推送
+- --window：每本电子书所含最大文章数，默认50
+
+#### 配置
+
+在`config`目录下新建一个`qdaily.yml`文件。
+
+```
+SAVE_PATH : 'C:\Users\web2kinle_save'
+```
+
+- SAVE_PATH：保存路径名。
+
+## 简书
+
+### jianshu_wenji
+
+批量获取某一简书文集下的所有文章。
+
+```
+python main.py jianshu_wenji --i=18160773
+```
+
+#### 参数
+
+可选参数：
+
+- --start：开始页，默认`1`。
+- --end：结束页，默认无限。
+- --no-img：不下载图片。
+- --gif：下载gif
+- --email：推送
+- --window：每本电子书所含最大文章数，默认50
 
 #### 配置
 
@@ -424,8 +461,8 @@ SAVE_PATH : 'C:\Users\web2kinle_save'
 
 # TODO
 
-- 知乎登录功能
-- ​
+- 天涯
+- 修复添加配置项后需要重启的bug
 
 # 更新日志
 
@@ -487,3 +524,10 @@ SAVE_PATH : 'C:\Users\web2kinle_save'
 * 取消`fix_mobi`脚本
 * 换行排版改进
 
+
+### 1.0.0.0
+
+* 添加了WebUI
+* 修复Crawler里面线程不能被正确结束的bug
+* 修正文章格式
+* 修复防止文件名重复导致后缀名出错的bug
