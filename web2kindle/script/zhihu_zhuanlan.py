@@ -114,7 +114,7 @@ def parser_list(task):
         url = 'https://zhuanlan.zhihu.com' + item['url']
         if md5string(url) in ARTICLE_ID_SET:
             to_next = False
-            break
+            continue
 
         new_task = Task.make_task({
             'url': url,
