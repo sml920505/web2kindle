@@ -126,8 +126,8 @@ def jianshu_zhuanti_main(i, f=None, start=1, end=INF, img=True, gif=False, email
         web2kindle.script.jianshu_zhuanti.main(l, start, end, kw)
 
 
-def jianshu_zhuanti_u_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
-    import web2kindle.script.jianshu_zhuanti_u
+def jianshu_user_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
+    import web2kindle.script.jianshu_user
 
     kw.update({
         'img': img,
@@ -136,12 +136,12 @@ def jianshu_zhuanti_u_main(i, f=None, start=1, end=INF, img=True, gif=False, ema
     })
 
     if i:
-        web2kindle.script.jianshu_zhuanti_u.main([i], int(start), int(end), kw)
+        web2kindle.script.jianshu_user.main([i], int(start), int(end), kw)
     elif f:
         l = read_file_to_list(f)
         if not isinstance(l, list):
             l = [l]
-        web2kindle.script.jianshu_zhuanti_u.main(l, start, end, kw)
+        web2kindle.script.jianshu_user.main(l, start, end, kw)
 
 
 def make_mobi(path, window=50, multi=True):
@@ -221,15 +221,15 @@ SCRIPTS = [{'script_name': 'zhihu_collection',
             'gif': True,
             'email': True, },
            {'script_name': 'jianshu_zhuanti',
-            'script_introduction': '获取简书专题（c版本）',
+            'script_introduction': '获取简书专题',
             'i': (True, '专题ID'),
             'start': True,
             'img': True,
             'gif': True,
             'email': True, },
-           {'script_name': 'jianshu_zhuanti_u',
-            'script_introduction': '获取简书专题（u版本）',
-            'i': (True, '专题ID'),
+           {'script_name': 'jianshu_user',
+            'script_introduction': '获取简书用户文章',
+            'i': (True, '用户ID'),
             'start': True,
             'img': True,
             'gif': True,
@@ -244,7 +244,7 @@ SCRIPT_FUNC = {
     'qdaily': qdaily_main,
     'jianshu_wenji': jianshu_wenji_main,
     'jianshu_zhuanti': jianshu_zhuanti_main,
-    'jianshu_zhuanti_u': jianshu_zhuanti_u_main,
+    'jianshu_user': jianshu_user_main,
 }
 
 SCRIPT_CONFIGS = [
@@ -390,7 +390,7 @@ SCRIPT_CONFIGS = [
         }]
     },
     {
-        'script_name': 'jianshu_zhuanti_u',
+        'script_name': 'jianshu_user',
         'configs': [{
             'config_name': 'SAVE_PATH',
             'config_introduction': "保存路径名",

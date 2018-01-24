@@ -8,7 +8,7 @@ import click
 import multiprocessing
 
 from web2kindle.script import zhihu_collection_main, zhihu_zhuanlan_main, zhihu_answers_main, guoke_scientific_main, \
-    qdaily_main, make_mobi, send_mobi, jianshu_wenji_main, jianshu_zhuanti_main, jianshu_zhuanti_u_main
+    qdaily_main, make_mobi, send_mobi, jianshu_wenji_main, jianshu_zhuanti_main, jianshu_user_main
 
 INF = 999999999
 
@@ -122,7 +122,7 @@ def jianshu_zhuanti_cli(i, f, start, end, img, gif, email, order_by, window):
     jianshu_zhuanti_main(i, f, start, end, img, gif, email, order_by=order_by, window=window)
 
 
-@cli.command('jianshu_zhuanti_u')
+@cli.command('jianshu_user')
 @click.option('--i')
 @click.option('--f')
 @click.option('--start', default=1)
@@ -132,8 +132,8 @@ def jianshu_zhuanti_cli(i, f, start, end, img, gif, email, order_by, window):
 @click.option('--email/--no-email', default=False)
 @click.option('--order_by', default='')
 @click.option('--window', default=50)
-def jianshu_zhuanti_u_cli(i, f, start, end, img, gif, email, order_by, window):
-    jianshu_zhuanti_u_main(i, f, start, end, img, gif, email, order_by=order_by, window=window)
+def jianshu_user_cli(i, f, start, end, img, gif, email, order_by, window):
+    jianshu_user_main(i, f, start, end, img, gif, email, order_by=order_by, window=window)
 
 
 if __name__ == '__main__':

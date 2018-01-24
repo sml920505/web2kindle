@@ -20,8 +20,8 @@ from web2kindle.libs.send_email import SendEmail2Kindle
 from web2kindle.libs.utils import write, md5string, load_config, check_config, format_file_name
 from web2kindle.libs.log import Log
 
-SCRIPT_CONFIG = load_config('./web2kindle/config/jianshu_zhuanti_u.yml')
-LOG = Log("jianshu_zhuanti_u")
+SCRIPT_CONFIG = load_config('./web2kindle/config/jianshu_user.yml')
+LOG = Log("jianshu_user")
 DEFAULT_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'
                   '61.0.3163.100 Safari/537.36'
