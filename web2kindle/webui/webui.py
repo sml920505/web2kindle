@@ -89,8 +89,9 @@ def action():
                 v = True
             kw.setdefault(k, v)
         elif k == 'start' or k == 'end':
-            if not k:
-                pass
+            # 如果没有指定start或end则使用默认值（不用处理）
+            if v:
+                kw.setdefault(k, v)
         elif k != 'kw':
             kw.setdefault(k, v)
 
