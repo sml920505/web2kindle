@@ -116,7 +116,7 @@ def parser_collection(task):
     book_name = bs.select('#zh-fav-head-title')[0].string.strip() if bs.select('#zh-fav-head-title') else task['save'][
         'name']
     for i in bs.select('.zm-item'):
-        article_url = i.select('.zm-item-title a')[0].attrs['href']
+        article_url = i.select('.zm-item-fav a.toggle-expand')[0].attrs['href']
         article_id = md5string(article_url)
 
         # 如果在数据库里面已经存在的项目，就不继续爬了
@@ -125,10 +125,10 @@ def parser_collection(task):
                 '.answer-head a.author-link') else '匿名'
             title = i.select('.zm-item-title a')[0].string if i.select('.zm-item-title a') else ''
 
-            content = i.select('.content')[0].string if i.select('.content') else ''
             voteup_count = i.select('a.zm-item-vote-count')[0].string if i.select('a.zm-item-vote-count') else ''
             created_time = i.select('p.visible-expanded a')[0].string.replace('发布于 ', '') if i.select(
                 'p.visible-expanded a') else ''
+            content = i.select('.content')[0].string if i.select('.content') else ''
 
             _, content = format_zhihu_content(content, task)
             download_img_list.extend(_)
