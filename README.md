@@ -49,7 +49,7 @@ LOG_LEVEL : 'INFO'
 DOWNLOADER_WORKER : 3
 ```
 
-请确保配置项所指向的`d:\Web2kinlde_data`文件夹不含中文且确实存在。最后我们保存名为`config.yml`的文件。放在`根目录/web2kindle/config`文件夹
+请确保配置项所指向的`d:\Web2kinlde_data`文件夹不含中文。最后我们保存名为`config.yml`的文件。放在`根目录/web2kindle/config`文件夹
 
 ## 放置Kindlegen程序
 
@@ -63,19 +63,12 @@ DOWNLOADER_WORKER : 3
 
 ## 使用
 
-如使用本程序下载知乎某收藏夹（[https://www.zhihu.com/collection/59744917](https://www.zhihu.com/collection/59744917)与[https://www.zhihu.com/collection/67258836](https://www.zhihu.com/collection/67258836)）。
-
-有一个本文文件`C:\Users\vincent8280\web2kindle\a.txt`。里面放着要下载的收藏夹的编号。
-
-```
-67258836
-59744917
-```
+如使用本程序下载知乎某收藏夹[https://www.zhihu.com/collection/59744917](https://www.zhihu.com/collection/59744917)
 
 切换到本项目目录下后，在控制台输入如下命令：
 
 ```
-python main.py zhihu_collection --f="C:\Users\vincent8280\web2kindle\a.txt"
+python main.py zhihu_collection --i=59744917
 ```
 
 运行结果如下（部分）：
@@ -144,7 +137,7 @@ python main.py zhihu_collection --i=191640375 --email
 
 在运行过一次`Web2kindle`之后，在目标文件夹下面出现一个名为`article.db`的数据库文件。`Web2kindle`每次下载的时候都会检查这个数据库，避免重复下载。
 
-举个例子，比如我知乎专门有一个收藏夹收藏要推送到Kindle的文章。每天我在知乎上收藏十篇文章到这个收藏夹，我希望使用`Web2kinlde`每天仅下载新增的十篇文章而不是把全部文章都获取下来。那么在运行一次`main.exe zhihu_collection --i=191640375`获取`191640375`所有内容之后。当我第二天再往这个收藏夹新增十篇文章，当我再次运行，`Web2kindle`会仅仅下载新增的那十篇文章而不会把收藏夹里全部文章重新下载一遍。
+举个例子，比如我知乎专门有一个收藏夹收藏要推送到Kindle的文章。每天我在知乎上收藏十篇文章到这个收藏夹，我希望使用`Web2kinlde`每天仅下载新增的十篇文章而不是把全部文章都获取下来。那么在运行一次`python main.py zhihu_collection --i=191640375`获取`191640375`所有内容之后。我第二天再往这个收藏夹新增十篇文章，当我再次运行，`Web2kindle`会仅仅下载新增的那十篇文章而不会把收藏夹里全部文章重新下载一遍。
 
 这个功能称之为`增量更新`。如果你不需要这种功能，你可以手动删除目标文件夹下面的`article.db`文件。
 
@@ -181,7 +174,7 @@ python main.py zhihu_collection --i=191640375 --email
 
 如`zhihu_collection`这个脚本的配置：
 
-在`config`目录下新建一个`zhihu_collection_config.yml`文件。
+在`config`目录下新建一个`zhihu_collection.yml`文件。
 
 ```
 SAVE_PATH : 'C:\Users\web2kinle_save'
@@ -265,12 +258,6 @@ python main.py zhihu_collection --f="c:\a.txt"
 
 #### 配置
 
-在`config`目录下新建一个`zhihu_collection.yml`文件。
-
-```
-SAVE_PATH : 'C:\Users\web2kinle_save'
-```
-
 - SAVE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
 ### zhihu_zhuanlan
@@ -306,12 +293,6 @@ alenxwn
 - --window：每本电子书所含最大文章数，默认50
 
 #### 配置
-
-在`config`目录下新建一个`zhihu_zhuanlan.yml`文件。
-
-```
-SAVE_PATH : 'C:\Users\web2kinle_save'
-```
 
 - SAVE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
@@ -350,12 +331,6 @@ chen-zi-long-50-58
 
 #### 配置
 
-在`config`目录下新建一个`zhihu_answers.yml`文件。
-
-```
-SAVE_PATH : 'C:\Users\web2kinle_save'
-```
-
 - SAVE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
 ## 果壳
@@ -377,12 +352,6 @@ python main.py guoke_scientific
 - --window：每本电子书所含最大文章数，默认50
 
 #### 配置
-
-在`config`目录下新建一个`guoke_scientific.yml`文件。
-
-```
-SAVE_PATH : 'C:\Users\web2kinle_save'
-```
 
 - SAVE_PATH：保存路径名。
 
@@ -420,12 +389,6 @@ python main.py qdaily
 
 #### 配置
 
-在`config`目录下新建一个`qdaily.yml`文件。
-
-```
-SAVE_PATH : 'C:\Users\web2kinle_save'
-```
-
 - SAVE_PATH：保存路径名。
 
 ## 简书
@@ -435,10 +398,12 @@ SAVE_PATH : 'C:\Users\web2kinle_save'
 批量获取某一简书文集下的所有文章。
 
 ```
-python main.py jianshu_wenji --i=18160773
+python main.py jianshu_wenji --i=4431345
 ```
 
 #### 参数
+
+* --i：简书文集的ID。如`https://www.jianshu.com/nb/4431345`的ID为“4431345”
 
 可选参数：
 
@@ -448,21 +413,77 @@ python main.py jianshu_wenji --i=18160773
 - --gif：下载gif
 - --email：推送
 - --window：每本电子书所含最大文章数，默认50
+- --order_by：
+  - seq：按目录排序（默认）
+  - commented_at：按评论时间排序
+  - added_at：按添加时间排序
 
 #### 配置
 
-在`config`目录下新建一个`qdaily.yml`文件。
+- SAVE_PATH：保存路径名。
+
+### jianshu_zhuanti
+
+批量获取某一简书专题下的所有文章。
 
 ```
-SAVE_PATH : 'C:\Users\web2kinle_save'
+python main.py jianshu_zhuanti --i=1a54c5910458
 ```
+
+#### 参数
+
+* --i：简书专题的定位元素ID。如`https://www.jianshu.com/c/1a54c5910458`的定位元素ID为“1a54c5910458”
+
+可选参数：
+
+- --start：开始页，默认`1`。
+- --end：结束页，默认无限。
+- --no-img：不下载图片。
+- --gif：下载gif
+- --email：推送
+- --window：每本电子书所含最大文章数，默认50
+- --order_by：
+  - top：按热门排序
+  - commented_at：按评论时间排序
+  - added_at：按添加时间排序（默认）
+
+#### 配置
+
+- SAVE_PATH：保存路径名。
+
+### jianshu_user
+
+批量获取某一简书专题下的所有文章。
+
+```
+python main.py jianshu_user --i=74307f7c1d61
+```
+
+#### 参数
+
+* --i：简书用户的定位元素ID。如`https://www.jianshu.com/u/74307f7c1d61?utm_source=desktop&utm_medium=index-users`的定位元素ID为“74307f7c1d61”
+
+可选参数：
+
+- --start：开始页，默认`1`。
+- --end：结束页，默认无限。
+- --no-img：不下载图片。
+- --gif：下载gif
+- --email：推送
+- --window：每本电子书所含最大文章数，默认50
+- --order_by：
+  - top：按热门排序
+  - commented_at：按评论时间排序
+  - added_at：按添加时间排序（默认）
+
+#### 配置
 
 - SAVE_PATH：保存路径名。
 
 # TODO
 
 - 天涯
-- 修复添加配置项后需要重启的bug
+- 修复GUI版添加配置项后需要重启的bug
 
 # 更新日志
 
@@ -531,3 +552,11 @@ SAVE_PATH : 'C:\Users\web2kinle_save'
 * 修复Crawler里面线程不能被正确结束的bug
 * 修正文章格式
 * 修复防止文件名重复导致后缀名出错的bug
+
+### 1.1.0.0
+
+* 添加简书脚本
+* WebUI可以设置脚本参数
+* 修复了同一收藏夹不能获取多条相同问题答案的bug 
+* 修复了"start""end"参数不能被正确处理的bug 
+* 修复没有配置文件就退出的bug 
