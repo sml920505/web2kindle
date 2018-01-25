@@ -1005,40 +1005,55 @@
     </style>
 </head>
 <body class='typora-export'>
-<div id='write' class='is-node'><h1><a name='header-c286' class='md-header-anchor '></a>Web2kindle GUI简介</h1>
-    <p><code>Web2kindle</code>项目提供一系列脚本，将知乎、果壳等网站的内容批量获取并解析打包成<code>mobi</code>格式供Kindle阅读。</p>
-    <h1><a name='header-c290' class='md-header-anchor '></a>快速开始</h1>
-    <h2><a name='header-c291' class='md-header-anchor '></a>下载</h2>
+<div id='write' class='is-node'><h1><a name='header-c5' class='md-header-anchor '></a>Web2kindle GUI简介</h1>
+    <p><code>Web2kindle</code>项目提供一系列脚本，将知乎、果壳、简书等网站的内容批量获取并解析打包成<code>mobi</code>格式供Kindle阅读。</p>
+    <h1><a name='header-c9' class='md-header-anchor '></a>快速开始</h1>
+    <h2><a name='header-c10' class='md-header-anchor '></a>下载</h2>
     <p>访问<a href='http://pan.baidu.com/s/1kV8Bqpp'>web2kindle百度云地址</a>下载最新版<code>Web2kindle
         GUI</code>与<code>Kindlegen</code>，并解压。</p>
     <p>进入<code>Web2kindle</code>程序的目录，如图所示。这个目录称为程序的<code>根目录</code>。</p>
-    <p><img src='./img/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_0.JPG' alt=''/></p>
-    <h3><a name='header-c298' class='md-header-anchor '></a>放置Kindlegen程序</h3>
+    <p><img src='./static/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_0.JPG' alt=''/></p>
+    <h3><a name='header-c17' class='md-header-anchor '></a>放置Kindlegen程序</h3>
     <p>进入<code>根目录/web2kindle/bin</code>文件夹。将下载好的<code>Kindlegen</code>程序放入该文件夹内（<strong>不要修改文件名</strong>）</p>
-    <h2><a name='header-c301' class='md-header-anchor '></a>运行</h2>
+    <h2><a name='header-c20' class='md-header-anchor '></a>运行</h2>
     <p>双击<code>webui.exe</code>程序运行。如图所示。</p>
-    <p><img src='./img/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_2.JPG' alt=''/></p>
+    <p><img src='./static/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_2.JPG' alt=''/></p>
     <p>运行后，打开浏览器访问<a href='127.0.0.1:1101'>127.0.0.1:1101</a>。如图所示。</p>
-    <p><img src='./img/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_1.JPG' alt=''/></p>
-    <h3><a name='header-c310' class='md-header-anchor '></a>配置</h3>
+    <p><img src='./static/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_1.JPG' alt=''/></p>
+    <h3><a name='header-c29' class='md-header-anchor '></a>配置</h3>
     <p>进入<code>脚本配置</code>，将<code>Config</code>下的<code>SAVE_PATH</code>设置为你想保存的路径。你也可以单独对每个脚本设置。如图所示。</p>
-    <p><img src='./img/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_3.JPG' alt=''/></p>
-    <h3><a name='header-c315' class='md-header-anchor '></a>主页</h3><h4><a name='header-c316'
-                                                                          class='md-header-anchor '></a>定位元素</h4>
+    <p><img src='./static/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_3.JPG' alt=''/></p>
+    <p><strong>配置完成之后，请重启<code>web2kindle</code></strong></p>
+    <h3><a name='header-c36' class='md-header-anchor '></a>主页</h3><h4><a name='header-c37'
+                                                                         class='md-header-anchor '></a>定位元素</h4>
     <p>我们需要用一个唯一的元素来定位我们要获取的内容。</p>
-    <p>对于知乎收藏夹<code>https://www.zhihu.com/collection/199993533</code>，其定位元素为<code>199993533</code></p>
-    <p>对于知乎答主<code>https://www.zhihu.com/people/zhong-wen-sen</code>，其定位元素为<code>zhong-wen-sen</code></p>
-    <p>对于知乎专栏<code>https://zhuanlan.zhihu.com/limiao</code>，其定位元素为<code>limiao</code></p><h4><a name='header-c325'
-                                                                                                class='md-header-anchor '></a>开始范围、结束范围
-    </h4>
-    <p>对于不同的脚本，因为源的不同，所以这个参数也会有所不同。有的用文章数，有的用日期。可以到<code>项目文档</code>查看。</p>
-    <p>
-        如果不填写的话，则根据脚本的不同而采取不同的默认行为。如：对于<code>zhihu_collection</code>、<code>zhihu_answers</code>、<code>zhihu_zhuanlan</code>、<code>guoke_scientific</code>、默认获取全部，对于<code>qdaily</code>则默认获取当天的文章。
-    </p><h4><a name='header-c330' class='md-header-anchor '></a>下载图片、gif</h4>
-    <p>一般默认不下载gif，因为其占用太大的体积</p><h4><a name='header-c333' class='md-header-anchor '></a>邮箱推送</h4>
+    <p>如对于知乎收藏夹<code>https://www.zhihu.com/collection/199993533</code>，其定位元素为<code>199993533</code></p>
+    <p>详见<code>附录</code>里面各个脚本的<code>i</code>参数。</p><h4><a name='header-c44' class='md-header-anchor '></a>参数</h4>
+    <p>每个脚本都有一些个性化的参数可供设置。如获取简书某一用户所有的文章的脚本<code>jianshu_user</code>。其在<code>附录</code>下的<code>参数</code>是这样的。</p>
+    <ul>
+        <li>
+            --i：简书用户的定位元素ID。如<code>https://www.jianshu.com/u/74307f7c1d61?utm_source=desktop&amp;utm_medium=index-users</code>的定位元素ID为“74307f7c1d61”
+        </li>
+    </ul>
+    <ul>
+        <li><p>--window：每本电子书所含最大文章数，默认50</p></li>
+        <li><p>--order_by：</p>
+            <ul>
+                <li>top：按热门排序</li>
+                <li>commented_at：按评论时间排序</li>
+                <li>added_at：按添加时间排序（默认）</li>
+            </ul>
+        </li>
+    </ul>
+    <p>除了<code>i</code>参数之外，其他的参数我们都可以设置。如下我们设置每本电子书有100篇文章，并且按照热门排序获取文章。</p>
+    <p><img src='./static/Web2kindle%20GUI%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B_4.JPG' alt=''/></p><h4><a
+            name='header-c72' class='md-header-anchor '></a>开始范围、结束范围</h4>
+    <p>这个是可选参数，如果你在获取一个很大的栏目的时候。建议你分点来获取。对于不同的脚本，因为源的不同，所以这个参数也会有所不同。具体可以到<code>附录</code>里面查看。</p><h4><a
+            name='header-c75' class='md-header-anchor '></a>下载图片、gif</h4>
+    <p>一般默认不下载gif，因为其占用太大的体积</p><h4><a name='header-c78' class='md-header-anchor '></a>邮箱推送</h4>
     <p><code>Web2kindle</code>支持邮箱推送，免除了你Kindle连接电脑的烦恼。具体请看<code>更进一步-推送到Kindle</code></p>
-    <h1><a name='header-c343' class='md-header-anchor '></a>更进一步</h1>
-    <h2><a name='header-c354' class='md-header-anchor '></a>推送到Kindle</h2>
+    <h1><a name='header-c81' class='md-header-anchor '></a>更进一步</h1>
+    <h2><a name='header-c82' class='md-header-anchor '></a>推送到Kindle</h2>
     <p>如果需要推送到Kindle，需要在配置文件里面新增如下配置项。</p>
     <ul>
         <li>EMAIL_USERNAME(可选)：发送给Kindle的邮箱的地址。</li>
@@ -1047,19 +1062,136 @@
         <li>KINDLE_ADDR(可选)：kindle接受推送的邮箱地址。</li>
     </ul>
     <p>注意，该推送将会推送目标文件夹下面所有mobi文件。所以每次推送完你应该手动清除目录下的mobi文件，避免下次出现重复推送的情况。</p>
-    <h2><a name='header-c388' class='md-header-anchor '></a>增量更新</h2>
+    <h2><a name='header-c100' class='md-header-anchor '></a>增量更新</h2>
     <p>在运行过一次<code>Web2kindle</code>之后，在目标文件夹下面出现一个名为<code>article.db</code>的数据库文件。<code>Web2kindle</code>每次下载的时候都会检查这个数据库，避免重复下载。
     </p>
     <p>举个例子，比如我知乎专门有一个收藏夹收藏要推送到Kindle的文章。每天我在知乎上收藏十篇文章到这个收藏夹，我希望使用<code>Web2kinlde</code>每天仅下载新增的十篇文章而不是把全部文章都获取下来。那么在第一次获取<code>191640375</code>所有内容之后。当我第二天再往这个收藏夹新增十篇文章，当再次运行，<code>Web2kindle</code>会仅仅下载新增的那十篇文章而不会把收藏夹里全部文章重新下载一遍。
     </p>
     <p>这个功能称之为<code>增量更新</code>。如果你不需要这种功能，你可以手动删除目标文件夹下面的<code>article.db</code>文件。</p>
-    <h2><a name='header-c336' class='md-header-anchor '></a>目录结构</h2>
+    <h2><a name='header-c107' class='md-header-anchor '></a>目录结构</h2>
     <p>在运行过一次<code>Web2kindle</code>之后，我们发现目录文件夹下面多出了几个文件。分别是：</p>
     <ul>
         <li><code>article.db</code>：存放已下载文章的数据库</li>
         <li><code>kindlegen.log</code>：kindlegen程序运行日志</li>
         <li><code>static</code>：存放下载的图片的文件夹</li>
     </ul>
-</div>
+    <h1><a name='header-c120' class='md-header-anchor '></a>附录</h1>
+    <h2><a name='header-c121' class='md-header-anchor '></a>脚本</h2>
+    <h3><a name='header-c122' class='md-header-anchor '></a>zhihu_collection</h3>
+    <p>批量获取知乎收藏夹。</p><h4><a name='header-c125' class='md-header-anchor '></a>参数</h4>
+    <ul>
+        <li>--i：知乎收藏夹的编号。如<code>https://www.zhihu.com/collection/191640375</code>的编号为“191640375”</li>
+    </ul>
+    <ul>
+        <li>--window：每本电子书所含最大文章数，默认50</li>
+    </ul>
+    <h4><a name='header-c134' class='md-header-anchor '></a>开始范围、结束范围</h4>
+    <p>取页数。</p>
+    <h3><a name='header-c137' class='md-header-anchor '></a>zhihu_zhuanlan</h3>
+    <p>批量获取知乎专栏。</p><h4><a name='header-c140' class='md-header-anchor '></a>参数</h4>
+    <ul>
+        <li>--i：知乎专栏的编号。如<code>https://zhuanlan.zhihu.com/vinca520</code>的编号为“vinca520”</li>
+    </ul>
+    <ul>
+        <li>--window：每本电子书所含最大文章数，默认50</li>
+    </ul>
+    <h4><a name='header-c149' class='md-header-anchor '></a>开始范围、结束范围</h4>
+    <p>取文章篇数，最少一页即
+        <del>20</del>
+        （我也不知道多少）篇。如结束范围是<code>30</code>的话。则会下载40篇文章。
+    </p>
+    <h3><a name='header-c152' class='md-header-anchor '></a>zhihu_answers</h3>
+    <p>批量获取知乎某人的全部回答。</p><h4><a name='header-c155' class='md-header-anchor '></a>参数</h4>
+    <ul>
+        <li>--i：知乎答主的ID。如<code>https://www.zhihu.com/people/zhong-wen-sen/answers</code>的ID为“zhong-wen-sen”</li>
+    </ul>
+    <ul>
+        <li>--window：每本电子书所含最大文章数，默认50</li>
+    </ul>
+    <h4><a name='header-c164' class='md-header-anchor '></a>开始范围、结束范围</h4>
+    <p>取文章篇数，最少一页即
+        <del>20</del>
+        （我也不知道多少）篇。如结束范围是<code>30</code>的话。则会下载40篇文章。
+    </p>
+    <h3><a name='header-c167' class='md-header-anchor '></a>guoke_scientific</h3>
+    <p>批量获取果壳网科学人下的所有文章。</p><h4><a name='header-c170' class='md-header-anchor '></a>参数</h4>
+    <ul>
+        <li>-window：每本电子书所含最大文章数，默认50</li>
+    </ul>
+    <h4><a name='header-c175' class='md-header-anchor '></a>开始范围、结束范围</h4>
+    <p>取文章篇数，最少一页即
+        <del>20</del>
+        （我也不知道多少）篇。如结束范围是<code>30</code>的话。则会下载40篇文章。
+    </p>
+    <h3><a name='header-c178' class='md-header-anchor '></a>qdaily</h3>
+    <p>批量获取好奇心下的所有文章。</p><h4><a name='header-c181' class='md-header-anchor '></a>参数</h4>
+    <p>可选参数：</p>
+    <ul>
+        <li><p>--i：制定类型，默认为<code>home</code></p>
+            <ul>
+                <li>home：首页</li>
+                <li>business：商业</li>
+                <li>intelligent：智能</li>
+                <li>design：设计</li>
+                <li>fashion：时尚</li>
+                <li>entertainment：娱乐</li>
+                <li>city：城市</li>
+                <li>game：游戏</li>
+                <li>long：长文章</li>
+            </ul>
+        </li>
+        <li><p>--window：每本电子书所含最大文章数，默认50</p></li>
+    </ul>
+    <h4><a name='header-c219' class='md-header-anchor '></a>开始范围、结束范围</h4>
+    <p>取日期。开始默认今天，结束默认今天。也就是默认获取今天的所有文章。日期格式如下<code>2018-12-12</code>。因为是倒叙获取，开始日期必须大于或等于结束日期。</p>
+    <h3><a name='header-c222' class='md-header-anchor '></a>jianshu_wenji</h3>
+    <p>批量获取某一简书文集下的所有文章。</p><h4><a name='header-c225' class='md-header-anchor '></a>参数</h4>
+    <ul>
+        <li><p>--i：简书文集的ID。如<code>https://www.jianshu.com/nb/4431345</code>的ID为“4431345”</p></li>
+        <li><p>--window：每本电子书所含最大文章数，默认50</p></li>
+        <li><p>--order_by：</p>
+            <ul>
+                <li>seq：按目录排序（默认）</li>
+                <li>commented_at：按评论时间排序</li>
+                <li>added_at：按添加时间排序</li>
+            </ul>
+        </li>
+    </ul>
+    <h4><a name='header-c246' class='md-header-anchor '></a>开始范围、结束范围</h4>
+    <p>取页数。</p>
+    <h3><a name='header-c249' class='md-header-anchor '></a>jianshu_zhuanti</h3>
+    <p>批量获取某一简书专题下的所有文章。</p><h4><a name='header-c252' class='md-header-anchor '></a>参数</h4>
+    <ul>
+        <li>--i：简书专题的定位元素ID。如<code>https://www.jianshu.com/c/1a54c5910458</code>的定位元素ID为“1a54c5910458”</li>
+    </ul>
+    <ul>
+        <li><p>--window：每本电子书所含最大文章数，默认50</p></li>
+        <li><p>--order_by：</p>
+            <ul>
+                <li>top：按热门排序</li>
+                <li>commented_at：按评论时间排序</li>
+                <li>added_at：按添加时间排序（默认）</li>
+            </ul>
+        </li>
+    </ul>
+    <h3><a name='header-c274' class='md-header-anchor '></a>jianshu_user</h3>
+    <p>批量获取某一简书专题下的所有文章。</p><h4><a name='header-c277' class='md-header-anchor '></a>参数</h4>
+    <ul>
+        <li>
+            --i：简书用户的定位元素ID。如<code>https://www.jianshu.com/u/74307f7c1d61?utm_source=desktop&amp;utm_medium=index-users</code>的定位元素ID为“74307f7c1d61”
+        </li>
+    </ul>
+    <ul>
+        <li><p>--window：每本电子书所含最大文章数，默认50</p></li>
+        <li><p>--order_by：</p>
+            <ul>
+                <li>top：按热门排序</li>
+                <li>commented_at：按评论时间排序</li>
+                <li>added_at：按添加时间排序（默认）</li>
+            </ul>
+        </li>
+    </ul>
+    <h4><a name='header-c299' class='md-header-anchor '></a>开始范围、结束范围</h4>
+    <p>取页数。</p></div>
 </body>
 </html>
