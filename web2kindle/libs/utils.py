@@ -13,12 +13,15 @@ import platform
 
 from functools import wraps
 
+from web2kindle.libs.log import Log
 
-def md5string(x):
+
+def md5string(x: str) -> str:
     return hashlib.md5(x.encode()).hexdigest()
 
 
 def singleton(cls):
+    """ 单例模式，用于装饰类 """
     instances = {}
 
     @wraps(cls)
@@ -33,7 +36,8 @@ def singleton(cls):
     return getinstance
 
 
-def load_config(path):
+def load_config(path: str) -> dict:
+    """ 读取yml配置文件 """
     try:
         try:
             with open(path, 'r', encoding='utf-8') as f:
@@ -45,7 +49,8 @@ def load_config(path):
         return {}
 
 
-def write_config(path, d):
+def write_config(path: str, d: dict) -> None:
+    """ 写yml配置文件 """
     # path所在的目录
     if not os.path.exists(os.path.split(path)[0]):
         os.makedirs((os.path.split(path)[0]))
@@ -55,11 +60,12 @@ def write_config(path, d):
         f.write(dump_string)
 
 
-def get_system():
+def get_system() -> str:
     return platform.system()
 
 
-def find_file(rootdir, pattern):
+def find_file(rootdir: str, pattern: str) -> list:
+    """ 用正则表达式寻找文件 """
     finded = []
     for i in os.listdir(rootdir):
         if not os.path.isdir(os.path.join(rootdir, i)):
@@ -68,26 +74,16 @@ def find_file(rootdir, pattern):
     return finded
 
 
-def write(folder_path, file_path, content, mode='wb'):
-    path = os.path.join(folder_path, file_path)
-    if not os.path.exists(os.path.split(path)[0]):
-        try:
-            os.makedirs((os.path.split(path)[0]))
-        except FileExistsError:
-            pass
-    with open(path, mode) as f:
-        f.write(content)
-
-
-def codes_write(folder_path, file_path, content, mode='wb'):
-    path = os.path.join(folder_path, file_path)
+def write(folder_path: str, file_name: str, content: str, mode: str = 'wb') -> None:
+    path = os.path.join(folder_path, file_name)
     if not os.path.exists(os.path.split(path)[0]):
         os.makedirs((os.path.split(path)[0]))
     with open(path, mode) as f:
         f.write(content)
 
 
-def format_file_name(file_name, a=''):
+def format_file_name(file_name: str, a: str = '') -> str:
+    """格式化文件名（去除文件名的一些特殊字符，同一长度等）"""
     file_name = re.sub(r'[ \\/:*?"<>→|+]', '', file_name)
 
     if a:
@@ -106,13 +102,13 @@ def format_file_name(file_name, a=''):
     return file_name
 
 
-def read_file(path):
-    with open(path, 'r', encoding='utf-8') as f:
+def read_file(path: str, encode: str = 'utf-8') -> str:
+    with open(path, 'r', encoding=encode) as f:
         text = f.read()
     return str(text)
 
 
-def read_file_to_list(path):
+def read_file_to_list(path: str) -> list or str:
     try:
         with open(path, 'r') as f:
             return [i.strip() for i in list(f.readlines())]
@@ -122,7 +118,7 @@ def read_file_to_list(path):
         return str(e)
 
 
-def check_config(main_config, script_config, config_name, logger):
+def check_config(main_config: dict, script_config: dict, config_name: str, logger: Log) -> None:
     if config_name not in script_config:
         if config_name in main_config:
             script_config.update({config_name: main_config.get(config_name)})
@@ -131,9 +127,11 @@ def check_config(main_config, script_config, config_name, logger):
             os._exit(0)
 
 
-def split_list(the_list, window):
+def split_list(the_list: list, window: int) -> list:
+    """ 将the_list分割成子list，每个子list有window项 """
     return [the_list[i:i + window] for i in range(0, len(the_list), window)]
 
 
-def random_char(c):
+def random_char(c: int) -> list:
+    """ 返回c个随机字符 """
     return [chr(random.choice(list(set(range(65, 123)) - set(range(91, 97))))) for i in range(c)]
