@@ -111,7 +111,7 @@ class Task(dict):
         return self['priority'] > other['priority']
 
     @staticmethod
-    def make_task(params: dict) -> Task:
+    def make_task(params: dict):
         if 'parser' not in params:
             # FIXME:Can't raise Exception in there
             raise Exception("Need a parser")
