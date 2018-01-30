@@ -30,7 +30,7 @@ class SendEmail:
         self.sended = []
         self.client = smtplib.SMTP()
 
-    def connect(self):
+    def connect(self) -> bool:
         try:
             self.log.log_it("正在连接邮件服务器", 'INFO')
             self.client.connect(self.smtp_addr)
@@ -39,9 +39,12 @@ class SendEmail:
             return True
         except smtplib.SMTPAuthenticationError:
             self.log.log_it("邮箱用户名或密码错误", 'WARN')
-        return False
+            return False
+        except Exception as e:
+            self.log.log_it("连接错误。错误信息：{}".format(str(e)), 'INFO')
+            return False
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         self.client.quit()
 
     def __enter__(self):
@@ -52,7 +55,7 @@ class SendEmail:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.disconnect()
 
-    def send_file(self, file_path):
+    def send_file(self, file_path: str) -> None:
         msg = MIMEMultipart()
         msg['Subject'] = 'Web2kindle'
         msg['From'] = self.sender
@@ -74,7 +77,7 @@ class SendEmail:
         except smtplib.SMTPException as e:
             self.log.log_it("未知错误。FILE_PATH:{},ERRINFO:{}".format(file_path, str(e)), 'WARN')
 
-    def send_files(self, file_paths):
+    def send_files(self, file_paths: list) -> None:
         for file_path in file_paths:
             self.log.log_it("正在发送：{}".format(file_path), 'INFO')
             self.send_file(file_path)
@@ -83,6 +86,6 @@ class SendEmail:
 
 @singleton
 class SendEmail2Kindle(SendEmail):
-    def send_all_mobi(self, path):
+    def send_all_mobi(self, path: str) -> None:
         mobi_file_paths = find_file(path, '.*mobi')
         self.send_files(mobi_file_paths)
