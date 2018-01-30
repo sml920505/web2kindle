@@ -13,8 +13,6 @@ import platform
 
 from functools import wraps
 
-from web2kindle.libs.log import Log
-
 
 def md5string(x: str) -> str:
     return hashlib.md5(x.encode()).hexdigest()
@@ -118,7 +116,7 @@ def read_file_to_list(path: str) -> list or str:
         return str(e)
 
 
-def check_config(main_config: dict, script_config: dict, config_name: str, logger: Log) -> None:
+def check_config(main_config: dict, script_config: dict, config_name: str, logger) -> None:
     if config_name not in script_config:
         if config_name in main_config:
             script_config.update({config_name: main_config.get(config_name)})
