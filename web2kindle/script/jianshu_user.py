@@ -49,8 +49,6 @@ def main(zhuanti_list, start, end, kw):
 
     start = int(start)
     end = int(end)
-    print(kw)
-    print(kw.get('order_by'))
 
     for zhuanti in zhuanti_list:
         new_header = deepcopy(DEFAULT_HEADERS)
@@ -115,7 +113,7 @@ def main(zhuanti_list, start, end, kw):
 
         if items:
             with HTML2Kindle(items, save_path, book_name, MAIN_CONFIG.get('KINDLEGEN_PATH')) as html2kindle:
-                html2kindle.make_metadata(window=SCRIPT_CONFIG.get('WINDOW', 50))
+                html2kindle.make_metadata(window=kw.get('window', 50))
                 html2kindle.make_book_multi(save_path)
 
             if kw.get('email'):
