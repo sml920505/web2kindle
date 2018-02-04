@@ -9,6 +9,7 @@ import time
 from queue import PriorityQueue, Empty, Queue
 
 import requests
+from requests import Session
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from threading import Thread, Condition, Lock
 
@@ -110,7 +111,7 @@ class Task(dict):
         return self['priority'] > other['priority']
 
     @staticmethod
-    def make_task(params):
+    def make_task(params: dict):
         if 'parser' not in params:
             # FIXME:Can't raise Exception in there
             raise Exception("Need a parser")
@@ -169,8 +170,8 @@ class Downloader(Thread):
                  downloader_parser_q: PriorityQueue,
                  result_q: Queue,
                  name: str,
-                 lock,
-                 session=requests.session()):
+                 lock: Lock,
+                 session: Session = requests.session()):
         super().__init__(name=name)
         self.to_download_q = to_download_q
         self.downloader_parser_q = downloader_parser_q
@@ -186,7 +187,7 @@ class Downloader(Thread):
     def exit(self):
         self._exit = True
 
-    def request(self):
+    def request(self) -> None:
         response = None
 
         try:
@@ -217,7 +218,7 @@ class Downloader(Thread):
             task.update({'response': None})
         self.downloader_parser_q.put(task)
 
-    def run(self):
+    def run(self) -> None:
         while not self._exit:
             self.request()
 
@@ -229,7 +230,7 @@ class Parser(Thread):
             downloader_parser_q: PriorityQueue,
             result_q: Queue,
             name: str,
-            lock):
+            lock: Lock):
         super().__init__(name=name)
         self.downloader_parser_q = downloader_parser_q
         self.to_download_q = to_download_q
@@ -243,7 +244,7 @@ class Parser(Thread):
     def exit(self):
         self._exit = True
 
-    def parser(self):
+    def parser(self) -> None:
 
         with COND:
             COND.notify_all()
@@ -294,7 +295,7 @@ class Parser(Thread):
             self.task_manager.unregister(task['tid'])
         return task_with_parsed_data
 
-    def run(self):
+    def run(self) -> None:
         while not self._exit:
             task_with_parsed_data = self.parser()
             if task_with_parsed_data:
@@ -308,7 +309,7 @@ class Resulter(Thread):
             downloader_parser_q: PriorityQueue,
             result_q: Queue,
             name: str,
-            lock):
+            lock: Lock):
         super().__init__(name=name)
         self.result_q = result_q
         self.downloader_parser_q = downloader_parser_q
@@ -322,7 +323,7 @@ class Resulter(Thread):
     def exit(self):
         self._exit = True
 
-    def result(self):
+    def result(self) -> None:
         with COND:
             COND.notify_all()
 
@@ -377,7 +378,7 @@ class Resulter(Thread):
                     self.result_q.put(task)
             return
 
-    def run(self):
+    def run(self) -> None:
         while (not TaskManager.ALLDONE) or (not self.result_q.empty()):
             self.result()
 
@@ -387,10 +388,10 @@ class Crawler:
                  to_download_q: PriorityQueue,
                  downloader_parser_q: PriorityQueue,
                  result_q: Queue,
-                 parser_worker_count,
-                 downloader_worker_count,
-                 resulter_worker_count,
-                 session=requests.session()):
+                 parser_worker_count: int,
+                 downloader_worker_count: int,
+                 resulter_worker_count: int,
+                 session: Session = requests.session()):
         self.parser_worker_count = int(parser_worker_count)
         self.downloader_worker_count = int(downloader_worker_count)
         self.resulter_worker_count = int(resulter_worker_count)
@@ -407,7 +408,7 @@ class Crawler:
         self.lock = Lock()
         self.task_manager = TaskManager(self.lock)
 
-    def start(self):
+    def start(self) -> None:
         for i in range(self.downloader_worker_count):
             _worker = Downloader(self.to_download_q, self.downloader_parser_q, self.result_q, "Downloader {}".format(i),
                                  self.lock, self.session, )
