@@ -251,7 +251,7 @@ class Parser(Thread):
         try:
             task = self.downloader_parser_q.get_nowait()
         except:
-            time.sleep(1)
+            time.sleep(0.1)
             with COND:
                 COND.notify_all()
             return
