@@ -110,7 +110,7 @@ def jianshu_wenji_main(i, f=None, start=1, end=INF, img=True, gif=False, email=F
 
 def jianshu_zhuanti_main(i, f=None, start=1, end=INF, img=True, gif=False, email=False, **kw):
     import web2kindle.script.jianshu_zhuanti
-    
+
     kw.update({
         'img': img,
         'gif': gif,
@@ -142,6 +142,19 @@ def jianshu_user_main(i, f=None, start=1, end=INF, img=True, gif=False, email=Fa
         if not isinstance(l, list):
             l = [l]
         web2kindle.script.jianshu_user.main(l, start, end, kw)
+
+
+def zhihu_daily_main(start=None, end=None, img=True, gif=False, email=False, **kw):
+    # start:20120101
+    import web2kindle.script.zhihu_daily
+
+    kw.update({
+        'img': img,
+        'gif': gif,
+        'email': email,
+    })
+
+    web2kindle.script.zhihu_daily.main(start, end, kw)
 
 
 def make_mobi(path, window=50, multi=True):
@@ -234,6 +247,13 @@ SCRIPTS = [{'script_name': 'zhihu_collection',
             'img': True,
             'gif': True,
             'email': True, },
+           {'script_name': 'zhihu_daily',
+            'script_introduction': '获取知乎日报',
+            'i': False,
+            'start': True,
+            'img': True,
+            'gif': True,
+            'email': True, },
            ]
 
 SCRIPT_FUNC = {
@@ -245,6 +265,7 @@ SCRIPT_FUNC = {
     'jianshu_wenji': jianshu_wenji_main,
     'jianshu_zhuanti': jianshu_zhuanti_main,
     'jianshu_user': jianshu_user_main,
+    'zhihu_daily': zhihu_daily_main,
 }
 
 SCRIPT_CONFIGS = [
@@ -391,6 +412,16 @@ SCRIPT_CONFIGS = [
     },
     {
         'script_name': 'jianshu_user',
+        'configs': [{
+            'config_name': 'SAVE_PATH',
+            'config_introduction': "保存路径名",
+            'default': '',
+            'requried': False
+        }]
+    },
+
+    {
+        'script_name': 'zhihu_daily',
         'configs': [{
             'config_name': 'SAVE_PATH',
             'config_introduction': "保存路径名",

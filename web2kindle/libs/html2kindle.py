@@ -27,7 +27,7 @@ class HTML2Kindle:
     index_template = Template(read_file('./web2kindle/templates/kindle_table.html'))
     ncx_template = Template(read_file('./web2kindle/templates/kindle_ncx.ncx'))
 
-    def __init__(self, items, path, book_name, kindlegen_path=KINDLE_GEN_PATH):
+    def __init__(self, items: list, path: str, book_name: str, kindlegen_path: str = KINDLE_GEN_PATH) -> None:
         self.kindlegen_path = kindlegen_path if kindlegen_path is not None else KINDLE_GEN_PATH
         self.items = items
         self.book_name = str(book_name)
@@ -38,20 +38,20 @@ class HTML2Kindle:
         if not os.path.exists(path):
             os.makedirs(path)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: None, exc_val: None, exc_tb: None) -> None:
         self.remove()
 
     def __enter__(self):
         return self
 
-    def remove(self):
+    def remove(self) -> None:
         for i in self.to_remove:
             try:
                 os.remove(i)
             except FileNotFoundError:
                 pass
 
-    def make_metadata(self, window=20):
+    def make_metadata(self, window: int = 20) -> None:
         spilt_items = split_list(self.items, window)
 
         # 根据window分割电子书
@@ -89,46 +89,46 @@ class HTML2Kindle:
             self.make_opf(self.book_name + '_' + str(index), opf, table_path, opf_path, ncx_path)
             self.make_ncx(self.book_name + '_' + str(index), opf, table_path, ncx_path)
 
-    def make_opf(self, title, navigation, table_path, opf_path, ncx_path):
+    def make_opf(self, title: str, navigation: list, table_path: str, opf_path: str, ncx_path: str) -> None:
         rendered_content = self.opf_template.render(title=title, navigation=navigation, table_href=table_path,
                                                     ncx_href=ncx_path)
         with codecs.open(opf_path, 'w', 'utf_8_sig') as f:
             f.write(rendered_content)
 
-    def make_ncx(self, title, navigation, table_path, opf_path):
+    def make_ncx(self, title: str, navigation: list, table_path: str, opf_path: str) -> None:
         rendered_content = self.ncx_template.render(title=title, navigation=navigation, table_href=table_path)
         with codecs.open(opf_path, 'w', 'utf_8_sig') as f:
             f.write(rendered_content)
 
-    def make_content(self, title, content, path, kw=None):
+    def make_content(self, title: str, content: str, path: str, kw: dict = None) -> None:
         rendered_content = self.content_template.render(title=title, content=content, kw=kw)
         with codecs.open(path, 'w', 'utf_8_sig') as f:
             f.write(rendered_content)
 
-    def make_table(self, navigation, path):
+    def make_table(self, navigation: list, path: str) -> None:
         rendered_content = self.index_template.render(navigation=navigation)
         with codecs.open(path, 'w', 'utf_8_sig') as f:
             f.write(rendered_content)
 
     @staticmethod
-    def _make_book(kindlegen_path, log_path, path):
+    def _make_book(kindlegen_path: str, log_path: str, path: str) -> None:
         os.system("{} -dont_append_source {}".format(kindlegen_path, path))
 
-    def make_book_multi(self, rootdir, overwrite=True):
+    def make_book_multi(self, rootdir: str, overwrite: bool = True) -> None:
         from multiprocessing import Pool
         self.log.log_it("新建 {} 个线程制作mobi文件.正在制作中，请稍后".format(str(cpu_count())), 'INFO')
         pool = Pool(cpu_count())
         opf_list = self.get_opf(rootdir, overwrite)
         pool.map(partial(self._make_book, self.kindlegen_path, os.path.join(self.path, 'kindlegen.log')), opf_list)
 
-    def make_book(self, rootdir, overwrite=True):
+    def make_book(self, rootdir: str, overwrite: bool = True) -> None:
         opf_list = self.get_opf(rootdir, overwrite)
         self.log.log_it("正在制作中，请稍后", 'INFO')
         for i in opf_list:
             os.system("{} -dont_append_source {} > {}".format(self.kindlegen_path, os.path.join(rootdir, i),
                                                               os.path.join(self.path, 'kindlegen.log')))
 
-    def get_opf(self, rootdir, overwrite):
+    def get_opf(self, rootdir: str, overwrite: bool) -> list:
         result = []
         mobi = []
         for i in os.listdir(rootdir):

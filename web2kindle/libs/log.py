@@ -14,7 +14,7 @@ class BaseLog(object):
     logger_dict = {}
 
     @staticmethod
-    def log(logger_name, message, level):
+    def log(logger_name: str, message: str, level: str) -> None:
         if level == 'INFO':
             BaseLog.get_logger(logger_name).info(message)
         elif level == 'DEBUG':
@@ -25,7 +25,7 @@ class BaseLog(object):
             BaseLog.get_logger(logger_name).warning(message)
 
     @staticmethod
-    def get_logger(logger_name):
+    def get_logger(logger_name: str) -> logging.Logger:
         if logger_name not in BaseLog.logger_dict:
             logger = logging.getLogger(logger_name)
             formatter = logging.Formatter(
@@ -50,14 +50,14 @@ class BaseLog(object):
 
 
 class Log(BaseLog):
-    def __init__(self, logger_name):
+    def __init__(self, logger_name: str):
         self.logger_name = logger_name
         self._logger_info = partial(BaseLog.log, logger_name=self.logger_name, level='INFO')
         self._logger_debug = partial(BaseLog.log, logger_name=self.logger_name, level='DEBUG')
         self._logger_warn = partial(BaseLog.log, logger_name=self.logger_name, level='WARN')
         self._logger_error = partial(BaseLog.log, logger_name=self.logger_name, level='ERROR')
 
-    def log_it(self, message, level='DEBUG'):
+    def log_it(self, message: str, level: str = 'DEBUG') -> None:
         if level == 'INFO':
             self._logger_info(message=message)
         elif level == 'DEBUG':

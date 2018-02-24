@@ -82,7 +82,7 @@ def action():
     form_data.setdefault('gif', False)
     form_data.setdefault('email', False)
 
-    kw = {'i': form_data['i']}
+    kw = {'i': form_data['i']} if 'i' in form_data else {}
     for k, v in form_data.items():
         if k == 'img' or k == 'gif' or k == 'email':
             if v is not False:
