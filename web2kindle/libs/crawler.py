@@ -209,17 +209,22 @@ class TaskManager:
     @staticmethod
     def register(tid):
         TaskManager.lock.acquire()
-        TaskManager.registered_task.add(tid)
-        TaskManager.lock.release()
+        try:
+            TaskManager.registered_task.add(tid)
+        except:
+            traceback.print_exc()
+        finally:
+            TaskManager.lock.release()
 
     @staticmethod
     def unregister(tid):
+        TaskManager.lock.acquire()
         try:
-            TaskManager.lock.acquire()
             TaskManager.registered_task.remove(tid)
-            TaskManager.lock.release()
         except KeyError:
             pass
+        finally:
+            TaskManager.lock.release()
 
     @staticmethod
     def is_empty():
@@ -253,59 +258,67 @@ class TaskManager:
         to_dowload_timestamp = TaskManager.get_time_section(task['to_download_timestamp'])
 
         TaskManager.lock.acquire()
-        # 如果已经在delay_task_time_section，说明已经存在delay_task_prioritylist里面
-        if to_dowload_timestamp in TaskManager.delay_task_time_section:
-            # 一直pop直到遇到to_download_timestamp的task为止
-            flag = True
-            old_tasks_list = []
-            while flag:
-                tmp_tasks_list = TaskManager.delay_task_prioritylist.priority_pop()
-                # print(to_dowload_timestamp,tmp_tasks_list)
-                if tmp_tasks_list:
-                    if tmp_tasks_list[0] != to_dowload_timestamp:
-                        # 不相同的，重新入队
-                        pass
-                    else:
-                        flag = False
-                        tmp_tasks_list[1].append(task)
+        try:
+            # 如果已经在delay_task_time_section，说明已经存在delay_task_prioritylist里面
+            if to_dowload_timestamp in TaskManager.delay_task_time_section:
+                # 一直pop直到遇到to_download_timestamp的task为止
+                flag = True
+                old_tasks_list = []
+                while flag:
+                    tmp_tasks_list = TaskManager.delay_task_prioritylist.priority_pop()
+                    # print(to_dowload_timestamp,tmp_tasks_list)
+                    if tmp_tasks_list:
+                        if tmp_tasks_list[0] != to_dowload_timestamp:
+                            # 不相同的，重新入队
+                            pass
+                        else:
+                            flag = False
+                            tmp_tasks_list[1].append(task)
 
-                    old_tasks_list.append(tmp_tasks_list)
-                else:
-                    raise Exception("!BUG!")
-                    # delay_task_prioritylist里面为空。正常情况下不会运行到这里。
-                    # to_dowload_timestamp在delay_task_time_section，说明已经存在delay_task_prioritylist里面
-                    pass
-            for each_tasks_list in old_tasks_list:
-                TaskManager.delay_task_prioritylist.priority_push(each_tasks_list)
-        else:
-            # 全新的
-            TaskManager.delay_task_prioritylist.priority_push([to_dowload_timestamp, [task]])
-            TaskManager.delay_task_time_section.add(to_dowload_timestamp)
-        TaskManager.lock.release()
+                        old_tasks_list.append(tmp_tasks_list)
+                    else:
+                        raise Exception("!BUG!")
+                        # delay_task_prioritylist里面为空。正常情况下不会运行到这里。
+                        # to_dowload_timestamp在delay_task_time_section，说明已经存在delay_task_prioritylist里面
+                        pass
+                for each_tasks_list in old_tasks_list:
+                    TaskManager.delay_task_prioritylist.priority_push(each_tasks_list)
+            else:
+                # 全新的
+                TaskManager.delay_task_prioritylist.priority_push([to_dowload_timestamp, [task]])
+                TaskManager.delay_task_time_section.add(to_dowload_timestamp)
+        except:
+            traceback.print_exc()
+        finally:
+            TaskManager.lock.release()
 
     def pop_to_download_queue(self):
         now_time = time.time()
         to_next = True
 
         TaskManager.lock.acquire()
-        while to_next:
-            tasks_list = TaskManager.delay_task_prioritylist.priority_pop()
-            if tasks_list:
-                if tasks_list[0] <= now_time:
-                    # 放入downloader队列
-                    for task in tasks_list[1]:
-                        del task['to_download_timestamp']
-                        self.to_download_q.put(task)
-                        with COND:
-                            COND.notify_all()
-                    TaskManager.delay_task_time_section.remove(tasks_list[0])
+        try:
+            while to_next:
+                tasks_list = TaskManager.delay_task_prioritylist.priority_pop()
+                if tasks_list:
+                    if tasks_list[0] <= now_time:
+                        # 放入downloader队列
+                        for task in tasks_list[1]:
+                            del task['to_download_timestamp']
+                            self.to_download_q.put(task)
+                            with COND:
+                                COND.notify_all()
+                        TaskManager.delay_task_time_section.remove(tasks_list[0])
+                    else:
+                        # 重新放入等待队列
+                        TaskManager.delay_task_prioritylist.priority_push(tasks_list)
+                        to_next = False
                 else:
-                    # 重新放入等待队列
-                    TaskManager.delay_task_prioritylist.priority_push(tasks_list)
                     to_next = False
-            else:
-                to_next = False
-        TaskManager.lock.release()
+        except:
+            traceback.print_exc()
+        finally:
+            TaskManager.lock.release()
 
     def run(self):
         while not self._exit:
@@ -364,6 +377,7 @@ class Downloader(Thread):
             task['response'] = response
         else:
             task['response'] = None
+
         self.downloader_parser_q.put(task)
 
     def run(self):
