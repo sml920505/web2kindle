@@ -151,8 +151,8 @@ def get_next_datetime_string(data_string: str, format_string: str, days: int, pr
 
 
 def compare_datetime_string(data_stringA: str, data_stringB: str, format_string: str) -> bool:
-    """return true if data_stringA is bigger"""
-    return datetime.datetime.strptime(data_stringA, format_string) > datetime.datetime.strptime(data_stringB,
+    """return true if data_stringA is bigger or equal"""
+    return datetime.datetime.strptime(data_stringA, format_string) >= datetime.datetime.strptime(data_stringB,
                                                                                                 format_string)
 
 

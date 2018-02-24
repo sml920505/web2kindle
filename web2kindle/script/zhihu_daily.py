@@ -75,6 +75,7 @@ def main(start, end, kw):
                  'end': end,
                  'kw': kw},
         'retry': 99,
+        'retry_delay': 10
     })
 
     iq.put(task)
