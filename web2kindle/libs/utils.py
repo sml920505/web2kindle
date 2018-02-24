@@ -4,6 +4,7 @@
 # Author: Vincent<vincent8280@outlook.com>
 #         http://wax8280.github.io
 # Created on 2017/10/10 9:52
+import heapq
 import os
 import random
 import re
@@ -137,3 +138,32 @@ def split_list(the_list, window):
 
 def random_char(c):
     return [chr(random.choice(list(set(range(65, 123)) - set(range(91, 97))))) for i in range(c)]
+
+
+class PriorityList(list):
+    """
+    >>> a = PriorityList()
+    >>> a.priority_push([150, ['t5', 't6']])
+    >>> print(a)
+    [[150, ['t5', 't6']]]
+    >>> a.priority_push([50, ['t1', 't2']])
+    >>> print(a)
+    [[50, ['t1', 't2']], [150, ['t5', 't6']]]
+    >>> a.priority_push([100, ['t3', 't4']])
+    >>> print(a)
+    [[50, ['t1', 't2']], [150, ['t5', 't6']], [100, ['t3', 't4']]]
+    >>> print(a.priority_pop())
+    [50, ['t1', 't2']]
+    >>> print(a)
+    [[100, ['t3', 't4']], [150, ['t5', 't6']]]
+    """
+
+    def priority_pop(self):
+        # lowest is first
+        try:
+            return heapq.heappop(self)
+        except IndexError:
+            return None
+
+    def priority_push(self, item):
+        heapq.heappush(self, item)
