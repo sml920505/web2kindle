@@ -81,7 +81,8 @@ def main(wenji_list, start, end, kw):
                      'kw': kw,
                      'name': wenji,
                      'order_by': order_by},
-            'retry': 3,
+            'retry': 10,
+            'retry_delay': 10
         })
 
         iq.put(task)

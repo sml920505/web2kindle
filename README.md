@@ -333,7 +333,17 @@ chen-zi-long-50-58
 
 - SAVE_PATH：保存路径名。会自动在此目录以`collection_num`生产一个子目录，元数据即保存在此子目录中。
 
+### zhihu_daily
+
+批量获取知乎日报
+
+```
+python main.py zhihu_daily
+```
+
+
 ## 果壳
+
 ### guoke_scientific
 批量获取果壳网科学人下的所有文章。
 
@@ -559,4 +569,13 @@ python main.py jianshu_user --i=74307f7c1d61
 * WebUI可以设置脚本参数
 * 修复了同一收藏夹不能获取多条相同问题答案的bug 
 * 修复了"start""end"参数不能被正确处理的bug 
-* 修复没有配置文件就退出的bug 
+* 修复没有配置文件就退出的bug
+
+### 1.1.1.0
+
+* 修复特殊字符导致文件名错误的bug
+* 修复了爬虫框架锁不释放的bug
+* 修复了爬虫框架解析器等待时间过长的bug
+* 修复了window参数无效的bug
+* 爬虫框架新增延迟重试功能
+* 新增知乎日报脚本

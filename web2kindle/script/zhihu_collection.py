@@ -50,12 +50,13 @@ def main(collection_num_list, start, end, kw):
             'parser': parser_collection,
             'resulter': resulter_collection,
             'priority': 0,
-            'retry': 3,
+            'retry': 10,
             'save': {'start': start,
                      'end': end,
                      'kw': kw,
                      'save_path': save_path,
                      'name': collection_num, },
+            'retry_delay': 10
         })
         iq.put(task)
         # Init DB

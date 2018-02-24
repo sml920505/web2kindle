@@ -55,7 +55,8 @@ def main(start, end, kw):
             'kw': kw,
             'save_path': SCRIPT_CONFIG['SAVE_PATH'],
         },
-        'retry': 3,
+        'retry': 10,
+        'retry_delay': 10
     })
     iq.put(task)
     # Init DB
@@ -147,7 +148,8 @@ def parser_list(task):
             'parser': parser_list,
             'priority': 0,
             'save': save,
-            'retry': 3,
+            'retry': 10,
+            'retry_delay': 10
         })
         new_tasks.append(new_task)
 

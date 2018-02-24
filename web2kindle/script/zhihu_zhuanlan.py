@@ -56,7 +56,8 @@ def main(zhuanlan_name_list, start, end, kw):
                      'end': end,
                      'kw': kw,
                      'name': zhuanlan_name},
-            'retry': 3,
+            'retry': 10,
+            'retry_delay': 10
         })
 
         iq.put(task)

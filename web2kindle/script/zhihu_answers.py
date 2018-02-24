@@ -67,7 +67,8 @@ def main(zhihu_answers_list, start, end, kw):
                 'save_path': save_path,
                 'base_url': 'https://www.zhihu.com/people/{}/answers?page={}'.format(zhihu_answers, start),
             },
-            'retry': 3,
+            'retry': 10,
+            'retry_delay': 10
         })
         iq.put(task)
 

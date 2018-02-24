@@ -101,7 +101,8 @@ def main(start, end, kw):
                  'kw': kw,
                  'page': 1,
                  'name': book_name, },
-        'retry': 3,
+        'retry': 10,
+        'retry_delay': 10
     })
     iq.put(task)
     # Init DB
