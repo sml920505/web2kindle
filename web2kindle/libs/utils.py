@@ -4,6 +4,8 @@
 # Author: Vincent<vincent8280@outlook.com>
 #         http://wax8280.github.io
 # Created on 2017/10/10 9:52
+import datetime
+import time
 import heapq
 import os
 import random
@@ -138,6 +140,24 @@ def split_list(the_list, window):
 
 def random_char(c):
     return [chr(random.choice(list(set(range(65, 123)) - set(range(91, 97))))) for i in range(c)]
+
+
+def get_next_datetime_string(data_string: str, format_string: str, days: int, prev=False) -> str:
+    now_datatime = datetime.datetime.strptime(data_string, format_string)
+    if prev:
+        return (now_datatime - datetime.timedelta(days=days)).strftime(format_string)
+    else:
+        return (now_datatime + datetime.timedelta(days=days)).strftime(format_string)
+
+
+def compare_datetime_string(data_stringA: str, data_stringB: str, format_string: str) -> bool:
+    """return true if data_stringA is bigger"""
+    return datetime.datetime.strptime(data_stringA, format_string) > datetime.datetime.strptime(data_stringB,
+                                                                                                format_string)
+
+
+def get_datetime_string(format_string: str) -> str:
+    return datetime.datetime.fromtimestamp(time.time()).strftime(format_string)
 
 
 class PriorityList(list):
