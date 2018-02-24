@@ -9,22 +9,31 @@ import time
 from queue import PriorityQueue, Empty, Queue
 
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from threading import Thread, Condition, Lock
 
 from web2kindle.libs.log import Log
-from web2kindle.libs.utils import singleton, md5string
+from web2kindle.libs.utils import md5string, PriorityList
 
 # 禁用安全请求警告
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 COND = Condition()
+LOCK = Lock()
 
 
 class RetryDownload(Exception):
     pass
 
 
+class RetryDownloadNodelay(Exception):
+    pass
+
+
 class RetryDownloadEnForce(Exception):
+    """强制将task放入to_download队列"""
+    pass
+
+
+class RetryDownloadEnForceNodelay(Exception):
     pass
 
 
@@ -32,7 +41,16 @@ class RetryParse(Exception):
     pass
 
 
+class RetryParseNodelay(Exception):
+    pass
+
+
 class RetryParseEnForce(Exception):
+    """强制将task放入download_parser队列"""
+    pass
+
+
+class RetryParseEnForceNodelay(Exception):
     pass
 
 
@@ -40,7 +58,16 @@ class RetryResult(Exception):
     pass
 
 
+class RetryResultNodelay(Exception):
+    pass
+
+
 class RetryResultEnForce(Exception):
+    """强制将task放入parser_resulter队列"""
+    pass
+
+
+class RetryResultEnForceNodelay(Exception):
     pass
 
 
@@ -100,6 +127,8 @@ class Task(dict):
 
         }
         parsed_data:                        Structured data from parser
+        to_download_timestamp：int          Timestamp to put in download queue
+        retry_delay: int                    Retry delay
     }
     """
 
@@ -112,7 +141,7 @@ class Task(dict):
     @staticmethod
     def make_task(params):
         if 'parser' not in params:
-            # FIXME:Can't raise Exception in there
+            # FIXME Can't raise Exception in there
             raise Exception("Need a parser")
         if 'method' not in params:
             raise Exception("Need a method")
@@ -133,34 +162,160 @@ class Task(dict):
         return Task(**params)
 
 
-@singleton
+def retry(task: Task, queue: Queue or PriorityQueue):
+    if task.get('retry', None):
+        task.setdefault('retried', 0)
+        if task.get('retried', 0) < task.get('retry'):
+            task['retried'] += 1
+            if task.get('retry_delay'):
+                # TaskManager只认to_download_timestamp
+                task['to_download_timestamp'] = time.time() + task.get('retry_delay')
+                TaskManager.push_delay_queue(task)
+            else:
+                queue.put(task)
+        else:
+            TaskManager.unregister(task['tid'])
+    else:
+        # 不重试，直接取消注册
+        TaskManager.unregister(task['tid'])
+
+
+def retry_nodelay(task: Task, queue: Queue or PriorityQueue):
+    if task.get('retry', None):
+        task.setdefault('retried', 0)
+        if task.get('retried', 0) < task.get('retry'):
+            task['retried'] += 1
+            queue.put(task)
+        else:
+            TaskManager.unregister(task['tid'])
+    else:
+        # 不重试，直接取消注册
+        TaskManager.unregister(task['tid'])
+
+
 class TaskManager:
     registered_task = set()
     ALLDONE = False
+    delay_task_prioritylist = PriorityList()
+    delay_task_time_section = set()
+    start_timestamp = time.time()
+    granularity = 0.1
+    lock = LOCK
 
-    def __init__(self, lock):
-        self.lock = lock
+    def __init__(self, to_download_q: PriorityQueue, ):
+        self.to_download_q = to_download_q
+        self._exit = False
 
-    def register(self, tid):
-        self.lock.acquire()
-        self.registered_task.add(tid)
-        self.lock.release()
+    @staticmethod
+    def register(tid):
+        TaskManager.lock.acquire()
+        TaskManager.registered_task.add(tid)
+        TaskManager.lock.release()
 
-    def unregister(self, tid):
-        self.lock.acquire()
+    @staticmethod
+    def unregister(tid):
         try:
-            self.registered_task.remove(tid)
+            TaskManager.lock.acquire()
+            TaskManager.registered_task.remove(tid)
+            TaskManager.lock.release()
         except KeyError:
             pass
-        self.lock.release()
 
-    def is_empty(self):
-        self.lock.acquire()
-        is_empty = (len(self.registered_task) == 0)
-        self.lock.release()
+    @staticmethod
+    def is_empty():
+        TaskManager.lock.acquire()
+        is_empty = (len(TaskManager.registered_task) == 0)
+        TaskManager.lock.release()
         if is_empty:
             TaskManager.ALLDONE = True
         return is_empty
+
+    @staticmethod
+    def get_time_section(t: int or float) -> float:
+        """
+        取大
+        >>> TaskManager.start_timestamp=1518490691.5014048
+        >>> TaskManager.get_time_section(1518490691.5014048+1.6)
+        1518490693.5014048
+        >>> TaskManager.get_time_section(1518490691.5014048+1.9)
+        1518490693.5014048
+
+        :param t:
+        :return:
+        """
+        time_section = TaskManager.start_timestamp
+        while t > time_section:
+            time_section += TaskManager.granularity
+        return time_section
+
+    @staticmethod
+    def push_delay_queue(task: Task):
+        to_dowload_timestamp = TaskManager.get_time_section(task['to_download_timestamp'])
+
+        TaskManager.lock.acquire()
+        # 如果已经在delay_task_time_section，说明已经存在delay_task_prioritylist里面
+        if to_dowload_timestamp in TaskManager.delay_task_time_section:
+            # 一直pop直到遇到to_download_timestamp的task为止
+            flag = True
+            old_tasks_list = []
+            while flag:
+                tmp_tasks_list = TaskManager.delay_task_prioritylist.priority_pop()
+                # print(to_dowload_timestamp,tmp_tasks_list)
+                if tmp_tasks_list:
+                    if tmp_tasks_list[0] != to_dowload_timestamp:
+                        # 不相同的，重新入队
+                        pass
+                    else:
+                        flag = False
+                        tmp_tasks_list[1].append(task)
+
+                    old_tasks_list.append(tmp_tasks_list)
+                else:
+                    raise Exception("!BUG!")
+                    # delay_task_prioritylist里面为空。正常情况下不会运行到这里。
+                    # to_dowload_timestamp在delay_task_time_section，说明已经存在delay_task_prioritylist里面
+                    pass
+            for each_tasks_list in old_tasks_list:
+                TaskManager.delay_task_prioritylist.priority_push(each_tasks_list)
+        else:
+            # 全新的
+            TaskManager.delay_task_prioritylist.priority_push([to_dowload_timestamp, [task]])
+            TaskManager.delay_task_time_section.add(to_dowload_timestamp)
+        TaskManager.lock.release()
+
+    def pop_to_download_queue(self):
+        now_time = time.time()
+        to_next = True
+
+        TaskManager.lock.acquire()
+        while to_next:
+            tasks_list = TaskManager.delay_task_prioritylist.priority_pop()
+            if tasks_list:
+                if tasks_list[0] <= now_time:
+                    # 放入downloader队列
+                    for task in tasks_list[1]:
+                        del task['to_download_timestamp']
+                        self.to_download_q.put(task)
+                        with COND:
+                            COND.notify_all()
+                    TaskManager.delay_task_time_section.remove(tasks_list[0])
+                else:
+                    # 重新放入等待队列
+                    TaskManager.delay_task_prioritylist.priority_push(tasks_list)
+                    to_next = False
+            else:
+                to_next = False
+        TaskManager.lock.release()
+
+    def run(self):
+        while not self._exit:
+            _ = time.time()
+
+            self.pop_to_download_queue()
+            time.sleep(self.granularity / 4)
+
+    def exit(self):
+        self._exit = True
 
 
 class Downloader(Thread):
@@ -169,7 +324,6 @@ class Downloader(Thread):
                  downloader_parser_q: PriorityQueue,
                  result_q: Queue,
                  name: str,
-                 lock,
                  session=requests.session()):
         super().__init__(name=name)
         self.to_download_q = to_download_q
@@ -180,8 +334,6 @@ class Downloader(Thread):
         self._exit = False
 
         self.log = Log(self.name)
-        self.lock = lock
-        self.task_manager = TaskManager(self.lock)
 
     def exit(self):
         self._exit = True
@@ -191,7 +343,7 @@ class Downloader(Thread):
 
         try:
             task = self.to_download_q.get_nowait()
-            self.task_manager.register(task['tid'])
+            TaskManager.register(task['tid'])
         except Empty:
             self.log.log_it("Scheduler to Downloader队列为空，{}等待中。".format(self.name), 'DEBUG')
             with COND:
@@ -205,16 +357,13 @@ class Downloader(Thread):
         except Exception as e:
             traceback.print_exc()
             self.log.log_it("网络请求错误。错误信息:{} URL:{} Response:{}".format(str(e), task['url'], response), 'INFO')
-            if task.get('retry', None):
-                if task.get('retried', 0) < task.get('retry'):
-                    task.update({'retried': task.get('retried', 1) + 1})
-                    self.to_download_q.put(task)
+            retry(task, self.to_download_q)
             return
 
         if response:
-            task.update({'response': response})
+            task['response'] = response
         else:
-            task.update({'response': None})
+            task['response'] = None
         self.downloader_parser_q.put(task)
 
     def run(self):
@@ -228,8 +377,7 @@ class Parser(Thread):
             to_download_q: PriorityQueue,
             downloader_parser_q: PriorityQueue,
             result_q: Queue,
-            name: str,
-            lock):
+            name: str):
         super().__init__(name=name)
         self.downloader_parser_q = downloader_parser_q
         self.to_download_q = to_download_q
@@ -237,8 +385,6 @@ class Parser(Thread):
 
         self._exit = False
         self.log = Log(self.name)
-        self.lock = lock
-        self.task_manager = TaskManager(self.lock)
 
     def exit(self):
         self._exit = True
@@ -249,8 +395,8 @@ class Parser(Thread):
             COND.notify_all()
         try:
             task = self.downloader_parser_q.get_nowait()
-        except:
-            time.sleep(1)
+        except Empty:
+            time.sleep(0.1)
             with COND:
                 COND.notify_all()
             return
@@ -262,14 +408,11 @@ class Parser(Thread):
                     tasks = [tasks]
                 self.log.log_it("获取新任务{}个。".format(len(tasks)), 'INFO')
                 for each_task in tasks:
-                    self.task_manager.register(each_task['tid'])
+                    TaskManager.register(each_task['tid'])
                     self.to_download_q.put(each_task)
         except RetryDownload:
             self.log.log_it("RetryDownload Exception.Task{}".format(task), 'INFO')
-            if task.get('retry', None):
-                if task.get('retried', 0) < task.get('retry'):
-                    task.update({'retried': task.get('retried', 1) + 1})
-                    self.to_download_q.put(task)
+            retry(task, self.to_download_q)
             return
         except RetryDownloadEnForce:
             self.log.log_it("RetryDownloadEnForce Exception.Task{}".format(task), 'INFO')
@@ -277,21 +420,17 @@ class Parser(Thread):
             return
         except RetryParse:
             self.log.log_it("RetryParse Exception.Task{}".format(task), 'INFO')
-            if task.get('retry', None):
-                if task.get('retried', 0) < task.get('retry'):
-                    task.update({'retried': task.get('retried', 1) + 1})
-                    self.downloader_parser_q.put(task)
+            retry(task, self.downloader_parser_q)
             return
         except RetryParseEnForce:
             self.log.log_it("RetryParse Exception.Task{}".format(task), 'INFO')
             self.downloader_parser_q.put(task)
             return
         except Exception as e:
-            traceback.print_exc()
             self.log.log_it("解析错误。错误信息：{}。Task：{}".format(str(e), task), 'WARN')
+            traceback.print_exc()
             return
-        finally:
-            self.task_manager.unregister(task['tid'])
+        TaskManager.unregister(task['tid'])
         return task_with_parsed_data
 
     def run(self):
@@ -307,8 +446,7 @@ class Resulter(Thread):
             to_download_q: PriorityQueue,
             downloader_parser_q: PriorityQueue,
             result_q: Queue,
-            name: str,
-            lock):
+            name: str):
         super().__init__(name=name)
         self.result_q = result_q
         self.downloader_parser_q = downloader_parser_q
@@ -316,8 +454,6 @@ class Resulter(Thread):
 
         self._exit = False
         self.log = Log(self.name)
-        self.lock = lock
-        self.task_manager = TaskManager(self.lock)
 
     def exit(self):
         self._exit = True
@@ -329,7 +465,7 @@ class Resulter(Thread):
         try:
             task = self.result_q.get_nowait()
         except Empty:
-            time.sleep(0.2)
+            time.sleep(0.1)
             return
 
         try:
@@ -337,44 +473,47 @@ class Resulter(Thread):
             task['resulter'](task)
         except RetryDownload:
             self.log.log_it("RetryDownload Exception.Task{}".format(task), 'INFO')
-            if task.get('retry', None):
-                if task.get('retried', 0) < task.get('retry'):
-                    task.update({'retried': task.get('retried', 1) + 1})
-                    self.to_download_q.put(task)
+            retry(task, self.to_download_q)
             return
-        except RetryDownloadEnForce:
+        except RetryDownloadEnForceNodelay:
             self.log.log_it("RetryDownloadEnForce Exception.Task{}".format(task), 'INFO')
             self.to_download_q.put(task)
             return
+        except RetryDownloadNodelay:
+            self.log.log_it("RetryDownloadNodelay Exception.Task{}".format(task), 'INFO')
+            retry_nodelay(task, self.to_download_q)
+            return
+
         except RetryParse:
             self.log.log_it("RetryParse Exception.Task{}".format(task), 'INFO')
-            if task.get('retry', None):
-                if task.get('retried', 0) < task.get('retry'):
-                    task.update({'retried': task.get('retried', 1) + 1})
-                    self.downloader_parser_q.put(task)
+            retry(task, self.downloader_parser_q)
             return
-        except RetryParseEnForce:
+        except RetryParseEnForceNodelay:
             self.log.log_it("RetryParse Exception.Task{}".format(task), 'INFO')
             self.downloader_parser_q.put(task)
+            return
+        except RetryParseNodelay:
+            self.log.log_it("RetryParseNodelay Exception.Task{}".format(task), 'INFO')
+            retry_nodelay(task, self.downloader_parser_q)
+            return
+
         except RetryResult:
             self.log.log_it("RetryResult Exception.Task{}".format(task), 'INFO')
-            if task.get('retry', None):
-                if task.get('retried', 0) < task.get('retry'):
-                    task.update({'retried': task.get('retried', 1) + 1})
-                    self.result_q.put(task)
+            retry(task, self.result_q)
             return
-        except RetryResultEnForce:
+        except RetryResultEnForceNodelay:
             self.log.log_it("RetryResultEnForce Exception.Task{}".format(task), 'INFO')
             self.result_q.put(task)
+            return
+        except RetryResultNodelay:
+            self.log.log_it("RetryResultNodelay Exception.Task{}".format(task), 'INFO')
+            retry_nodelay(task, self.result_q)
             return
 
         except Exception as e:
             traceback.print_exc()
             self.log.log_it("Resulter函数错误。错误信息：{}。Task：{}".format(str(e), task), 'WARN')
-            if task.get('retry', None):
-                if task.get('retried', 0) < task.get('retry'):
-                    task.update({'retried': task.get('retried', 1) + 1})
-                    self.result_q.put(task)
+            retry(task, self.result_q)
             return
 
     def run(self):
@@ -403,28 +542,30 @@ class Crawler:
         self.downloader_parser_q = downloader_parser_q
         self.result_q = result_q
 
+        self.task_manager = TaskManager(self.to_download_q)
         self.session = session
-        self.lock = Lock()
-        self.task_manager = TaskManager(self.lock)
+        self.lock = LOCK
+
+        self.task_manager_thread = Thread(target=self.task_manager.run)
 
     def start(self):
+        self.task_manager_thread.start()
+
         for i in range(self.downloader_worker_count):
             _worker = Downloader(self.to_download_q, self.downloader_parser_q, self.result_q, "Downloader {}".format(i),
-                                 self.lock, self.session, )
+                                 self.session, )
             self.downloader_worker.append(_worker)
             self.log.log_it("启动 Downloader {}".format(i), 'INFO')
             _worker.start()
 
         for i in range(self.parser_worker_count):
-            _worker = Parser(self.to_download_q, self.downloader_parser_q, self.result_q, "Parser {}".format(i),
-                             self.lock)
+            _worker = Parser(self.to_download_q, self.downloader_parser_q, self.result_q, "Parser {}".format(i))
             self.parser_worker.append(_worker)
             self.log.log_it("启动 Parser {}".format(i), 'INFO')
             _worker.start()
 
         for i in range(self.resulter_worker_count):
-            _worker = Resulter(self.to_download_q, self.downloader_parser_q, self.result_q, "Resulter {}".format(i),
-                               self.lock)
+            _worker = Resulter(self.to_download_q, self.downloader_parser_q, self.result_q, "Resulter {}".format(i))
             self.resulter_worker.append(_worker)
             self.log.log_it("启动 Resulter {}".format(i), 'INFO')
             _worker.start()
@@ -446,5 +587,7 @@ class Crawler:
 
                 for worker in self.resulter_worker:
                     worker.exit()
+
+                self.task_manager.exit()
                 TaskManager.ALLDONE = False
                 return
