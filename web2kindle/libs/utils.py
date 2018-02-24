@@ -91,7 +91,7 @@ def codes_write(folder_path, file_path, content, mode='wb'):
 
 
 def format_file_name(file_name, a=''):
-    file_name = re.sub(r'[ \\/:*?"<>→|+]', '', file_name)
+    file_name = re.sub(r'[ \\/:*?"<>→|+\r\n]', '', file_name)
 
     if a:
         # 文件名太长无法保存mobi
