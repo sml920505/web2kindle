@@ -52,6 +52,7 @@ class HTML2Kindle:
                 pass
 
     def make_metadata(self, window: int = 20) -> None:
+        window = int(window)
         spilt_items = split_list(self.items, window)
 
         # 根据window分割电子书
