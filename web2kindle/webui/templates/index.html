@@ -4,16 +4,15 @@
     <script src="{{ url_for("static", filename="js/common.js") }}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            var script_name = window.script_name;
+            var script_name = '';
             var kw = {};
-            console.log(script_name);
-            $(script_name).each(function (k, v) {
+
+            $(window.script_name).each(function (k, v) {
                 $("#" + v).submit(function (e) {
                     e.preventDefault();
                     var t = $("#" + v).serializeArray();
                     t.push({"name": "script_name", "value": v});
                     t.push({"name": "kw", "value": JSON.stringify(kw)});
-                    console.log(t);
                     $.post("/action", t, function (data, status) {
                         if (data) {
                             alert(data);
@@ -22,39 +21,49 @@
                 });
             });
 
-            $("#kw_add_btn").click(function () {
-                $("#kw_row").append('<div class="col-md-6 kw_row"><input type="text" class="form-control kw_k" placeholder=""></div>\n' +
-                    '<div class="col-md-6 kw_row"><input type="text" class="form-control kw_v" placeholder=""></div>');
+
+            $(".kw_btn").click(function () {
+                $(".modal-body").empty();
+                $(".modaal-body").append('<div class="row"><div class="col-md-6">参数</div><div class="col-md-6">值</div></div></hr>\n');
+
+                script_name = $(this).parent().parent().attr("id");
+                var script_kw = window.kw[script_name];
+                console.log(script_name)
+                console.log(script_kw)
+
+                $(script_kw).each(function (k, v) {
+                    if (v.select == null) {
+                        $(".modal-body").append('' +
+                            '<div class="row"><div class="col-md-6 kw_row"><p id="kw_k_' + k + '">' + v.name + '</p></div>\n' +
+                            '<div class="col-md-6 kw_row"><input id="kw_v_' + k + '" type="text" class="form-control kw_v" placeholder="" value="' + v.default + '"></div></div>');
+                    }
+                    else {
+                        var option_s = '';
+                        $(v.select).each(function (k, v) {
+                            option_s = option_s + '<option value="' + v + '">' + v + '</option>'
+                        });
+
+                        $(".modal-body").append('' +
+                            '<div class="row"><div class="col-md-6 kw_row"><p id="kw_k_' + k + '">' + v.name + '</p></div>\n' +
+                            '<div class="col-md-6 kw_row"><select id="kw_v_' + k + '">' + option_s + '</select></div></div>');
+                    }
+
+                });
+
             });
 
             $("#kw_submit_btn").click(function () {
-                var kw_k = $("#kw_row :input.kw_k");
-                var kw_v = $("#kw_row :input.kw_v");
+                kw = {};
+                var script_kw = window.kw[script_name];
 
-                var kw_k_arr = [];
-                var kw_v_arr = [];
-
-                kw_k.each(function () {
-                    kw_k_arr.push($(this).val());
+                $(script_kw).each(function (k, v) {
+                    kw[$('#kw_k_' + k).text()] = $('#kw_v_' + k).val()
                 });
 
-
-                kw_v.each(function () {
-                    kw_v_arr.push($(this).val());
-                });
-
-
-                for (var i = 0; i < kw_k_arr.length; i++) {
-                    var k = kw_k_arr[i];
-                    var v = kw_v_arr[i];
-                    kw[k] = v;
-                }
+                console.log(kw)
             });
 
-            $("#kw_rm_all_btn").click(function () {
-                $("#kw_row").empty();
-                kw = {};
-            })
+
         });
     </script>
 
@@ -77,16 +86,6 @@
 {% block nav %}
     <li class="active"><a href="/">主页</a></li>
     <li class=""><a href="/config">脚本配置</a></li>
-    <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-            使用教程 <b class="caret"></b>
-        </a>
-        <ul class="dropdown-menu">
-            <li><a href="/guide_gui">Web2kindle GUI版教程</a></li>
-            <li><a href="/guide_cli">Web2kindle CLI版高级教程</a></li>
-        </ul>
-    </li>
-    <li class=""><a href="/doc">项目文档</a></li>
     <li class=""><a href="/about">关于</a></li>
 {% endblock %}
 
@@ -139,7 +138,7 @@
                         {% endif %}
                     </div>
                     <div class="col-md-1">
-                        <a id="kw_btn" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#myModal">
+                        <a class="btn btn-sm btn-primary kw_btn" data-toggle="modal" data-target="#myModal">
                             设置
                         </a>
                     </div>
@@ -186,20 +185,8 @@
                     <h4 class="modal-title" id="myModalLabel">参数设置</h4>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">参数</div>
-                        <div class="col-md-6">值</div>
-                    </div>
-                    </hr>
-                    <div class="row" id="kw_row">
-                        <div class="col-md-6 kw_row"><input type="text" class="form-control kw_k" placeholder=""></div>
-                        <div class="col-md-6 kw_row"><input type="text" class="form-control kw_v" placeholder=""></div>
-                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-warning" id="kw_rm_all_btn" data-dismiss="modal">删除所有配置
-                    </button>
-                    <button type="button" class="btn btn-default" id="kw_add_btn">增加行</button>
                     <button type="button" class="btn btn-primary" id="kw_submit_btn" data-dismiss="modal">提交更改</button>
                 </div>
             </div><!-- /.modal-content -->
