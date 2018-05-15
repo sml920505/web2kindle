@@ -10,26 +10,26 @@ if __name__ == '__main__':
         from web2kindle.webui.webui import app
 
         print("""                                                                                                         
-                          VVV         VVVVVV   VVV          VVV                     VVV    VVV               
-                          VVV        VVVVVVVV  VVV          VVV                     VVV    VVV               
-                          VVV        VVV  VVVV VVV                                  VVV    VVV               
-                          VVV       VVV    VVV VVV                                  VVV    VVV               
-                          VVV             VVVV VVV                                  VVV    VVV               
-     VVVVVVVVVVV VVVVVVV  VVVVVVVV        VVV  VVV  VVVV    VVV     VVVVVVVV   VVVVVVVV    VVV      VVVVVV   
-     VVVVVVVVVV VVVV VVVV VVVV VVVV      VVVV  VVV VVV      VVV     VVVV VVVV VVVV VVVV    VVV     VVV  VVV  
-     VVVVVVVVVV VVV   VVV VVVV  VVV      VVV   VVVVVV       VVV     VVV   VVV VVV  VVVV    VVV    VVVV  VVVV 
-     VVVVVVVVVV VVVVVVVVV VVV   VVVV    VVV    VVVVVV       VVV     VVV   VVVVVVV   VVV    VVV    VVVVVVVVVV 
-      VVVVVVVVV VVV       VVV   VVVV   VVVV    VVVVVVV      VVV     VVV   VVVVVVV   VVV    VVV    VVV        
-      VVVVVVVV  VVV       VVV   VVV   VVVV     VVV VVV      VVV     VVV   VVV VVV   VVV    VVV    VVVV       
-      VVVVVVVV  VVVV  VVV VVVV  VVV  VVVV      VVV  VVV     VVV     VVV   VVV VVV  VVVV    VVV     VVV  VVVV 
-      VVVV VVV   VVVVVVVV VVVVVVVVV  VVVVVVVVV VVV  VVVV    VVV     VVV   VVV VVVVVVVVV    VVV     VVVVVVVV  
-       VVV VVV    VVVVV   VVVVVVV    VVVVVVVVV VVV   VVV    VVV     VVV   VVV   VVVVVVV    VVV       VVVVV   
-    
-    ---------------------------------------------------------------------------------------------------------
-    Author:wax8280
-    Email:wax8280@163.com
-    Github:github.com/wax8280/web2kindle
-    Version:1.0.0.0""")
+                      VVV         VVVVVV   VVV          VVV                     VVV    VVV               
+                      VVV        VVVVVVVV  VVV          VVV                     VVV    VVV               
+                      VVV        VVV  VVVV VVV                                  VVV    VVV               
+                      VVV       VVV    VVV VVV                                  VVV    VVV               
+                      VVV             VVVV VVV                                  VVV    VVV               
+ VVVVVVVVVVV VVVVVVV  VVVVVVVV        VVV  VVV  VVVV    VVV     VVVVVVVV   VVVVVVVV    VVV      VVVVVV   
+ VVVVVVVVVV VVVV VVVV VVVV VVVV      VVVV  VVV VVV      VVV     VVVV VVVV VVVV VVVV    VVV     VVV  VVV  
+ VVVVVVVVVV VVV   VVV VVVV  VVV      VVV   VVVVVV       VVV     VVV   VVV VVV  VVVV    VVV    VVVV  VVVV 
+ VVVVVVVVVV VVVVVVVVV VVV   VVVV    VVV    VVVVVV       VVV     VVV   VVVVVVV   VVV    VVV    VVVVVVVVVV 
+  VVVVVVVVV VVV       VVV   VVVV   VVVV    VVVVVVV      VVV     VVV   VVVVVVV   VVV    VVV    VVV        
+  VVVVVVVV  VVV       VVV   VVV   VVVV     VVV VVV      VVV     VVV   VVV VVV   VVV    VVV    VVVV       
+  VVVVVVVV  VVVV  VVV VVVV  VVV  VVVV      VVV  VVV     VVV     VVV   VVV VVV  VVVV    VVV     VVV  VVVV 
+  VVVV VVV   VVVVVVVV VVVVVVVVV  VVVVVVVVV VVV  VVVV    VVV     VVV   VVV VVVVVVVVV    VVV     VVVVVVVV  
+   VVV VVV    VVVVV   VVVVVVV    VVVVVVVVV VVV   VVV    VVV     VVV   VVV   VVVVVVV    VVV       VVVVV   
+
+---------------------------------------------------------------------------------------------------------
+Author:wax8280
+Email:wax8280@163.com
+Github:github.com/wax8280/web2kindle
+Version:1.1.2""")
         app.run(port=MAIN_CONFIG.get('WEBUI_PORT', 1101))
     except:
         import traceback
