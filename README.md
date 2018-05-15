@@ -579,3 +579,9 @@ python main.py jianshu_user --i=74307f7c1d61
 * 修复了window参数无效的bug
 * 爬虫框架新增延迟重试功能
 * 新增知乎日报脚本
+
+### 1.1.2
+
+* 修复window参数不是int时导致的bug
+* 删除文档
+* 脚本参数不用手动填写了，可直接选择
