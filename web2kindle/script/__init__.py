@@ -340,7 +340,7 @@ SCRIPT_CONFIGS = [
             },
             {
                 'config_name': 'KINDLE_ADDR',
-                'config_introduction': "Kindle接受推送的邮箱",
+                'config_introduction': "Kindle邮箱地址",
                 'requried': False,
                 'default': '',
             },
