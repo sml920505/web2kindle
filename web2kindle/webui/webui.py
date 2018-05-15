@@ -82,6 +82,7 @@ def action():
     form_data.setdefault('gif', False)
     form_data.setdefault('email', False)
 
+    # 某些脚本没有i参数
     kw = {'i': form_data['i']} if 'i' in form_data else {}
     for k, v in form_data.items():
         if k == 'img' or k == 'gif' or k == 'email':
@@ -133,5 +134,5 @@ if __name__ == '__main__':
 Author:wax8280
 Email:wax8280@163.com
 Github:github.com/wax8280/web2kindle
-Version:1.0.0.0""")
+Version:1.1.2""")
     app.run(port=MAIN_CONFIG.get('WEBUI_PORT', 1101))
