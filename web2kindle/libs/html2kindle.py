@@ -51,7 +51,7 @@ class HTML2Kindle:
             except FileNotFoundError:
                 pass
 
-    def make_metadata(self, window: int = 20) -> None:
+    def make_metadata(self, window: str or int = 20) -> None:
         window = int(window)
         spilt_items = split_list(self.items, window)
 
